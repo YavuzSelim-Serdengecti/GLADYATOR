@@ -1,12 +1,48 @@
+import {
+  Cinzel_600SemiBold,
+  Cinzel_700Bold,
+  useFonts,
+} from "@expo-google-fonts/cinzel";
 import { router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import GameModal from "../src/components/GameModal";
+
+import {
+  GameFeature,
+  getFeatureRequiredLevel,
+  isFeatureUnlocked,
+} from "../src/features/progression/featureUnlocks";
+
+import {
+  getFinancialStatusLabel,
+  MAX_DEBT_DAYS,
+} from "../src/features/economy/bankruptcySystem";
+
+import {
+  getCurrentLevelRequirement,
+  getLudusLevelProgress,
+  getNextLevelRequirement,
+  isMaxLudusLevel,
+} from "../src/features/ludus/ludusLevel";
 
 import { useGameStore } from "../src/store/gameStore";
+
+const TEST_MODE = false;
 
 type MapLocationProps = {
   title: string;
   subtitle?: string;
-  levelRequired?: number;
+  feature: GameFeature;
   currentLevel: number;
   onPress?: () => void;
   style?: object;
@@ -15,40 +51,294 @@ type MapLocationProps = {
 function MapLocation({
   title,
   subtitle,
-  levelRequired = 1,
+  feature,
   currentLevel,
   onPress,
   style,
 }: MapLocationProps) {
-  const locked = currentLevel < levelRequired;
+  const requiredLevel = getFeatureRequiredLevel(feature);
+  const featureUnlocked = isFeatureUnlocked(feature, currentLevel);
+  const locked = !TEST_MODE && !featureUnlocked;
 
   return (
     <Pressable
       disabled={locked || !onPress}
       onPress={onPress}
-      style={[styles.location, locked && styles.lockedLocation, style]}>
-      <Text style={styles.locationIcon}>{locked ? "🔒" : "🏛️"}</Text>
+      style={({ pressed }) => [
+        styles.location,
+        locked && styles.lockedLocation,
+        !onPress && !locked && styles.unavailableLocation,
+        pressed && !locked && onPress && styles.locationPressed,
+        style,
+      ]}>
+      <View style={styles.locationLabel}>
+        <Text
+          numberOfLines={1}
+          style={[styles.locationTitle, locked && styles.lockedText]}>
+          {locked ? "🔒 " : ""}
+          {title}
+        </Text>
 
-      <Text style={[styles.locationTitle, locked && styles.lockedText]}>
-        {title}
-      </Text>
-
-      {locked ? (
-        <Text style={styles.levelText}>Lv. {levelRequired}</Text>
-      ) : subtitle ? (
-        <Text style={styles.locationSubtitle}>{subtitle}</Text>
-      ) : null}
+        {locked ? (
+          <Text style={styles.levelText}>LV. {requiredLevel}</Text>
+        ) : !onPress ? (
+          <Text style={styles.unavailableText}>YAKINDA</Text>
+        ) : subtitle ? (
+          <Text numberOfLines={1} style={styles.locationSubtitle}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
     </Pressable>
   );
 }
 
 export default function MapScreen() {
+  const insets = useSafeAreaInsets();
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+
+  const [goToFinancialStatusAfterModal, setGoToFinancialStatusAfterModal] =
+    useState(false);
+
   const world = useGameStore((state) => state.world);
   const ludus = useGameStore((state) => state.playerLudus);
+  const endDay = useGameStore((state) => state.endDay);
+
+  const bankruptcyState = useGameStore((state) => state.bankruptcyState);
+
+  const dailyRewardAvailable = useGameStore(
+    (state) => state.dailyRewardAvailable,
+  );
+
+  const checkDailyReward = useGameStore((state) => state.checkDailyReward);
+
+  const [fontsLoaded] = useFonts({
+    Cinzel_600SemiBold,
+    Cinzel_700Bold,
+  });
+
+  const safeLeft = Math.max(24, insets.left + 12);
+  const safeRight = Math.max(24, insets.right + 12);
+
+  const handleDailyReward = async () => {
+    if (!ludus) {
+      return;
+    }
+
+    const unlocked = isFeatureUnlocked("daily_reward", ludus.level);
+
+    if (!TEST_MODE && !unlocked) {
+      const requiredLevel = getFeatureRequiredLevel("daily_reward");
+
+      setModalTitle("ÖZELLİK KİLİTLİ");
+      setModalMessage(`Günlük Çark Lv. ${requiredLevel} seviyesinde açılır.`);
+      setModalVisible(true);
+
+      return;
+    }
+
+    await checkDailyReward();
+
+    router.push("/daily-reward");
+  };
+
+  const handleRivals = () => {
+    if (!ludus) {
+      return;
+    }
+
+    const unlocked = isFeatureUnlocked("rivals", ludus.level);
+
+    if (!TEST_MODE && !unlocked) {
+      const requiredLevel = getFeatureRequiredLevel("rivals");
+
+      setModalTitle("ÖZELLİK KİLİTLİ");
+
+      setModalMessage(
+        `Rakip Luduslar Lv. ${requiredLevel} seviyesinde açılır.`,
+      );
+
+      setModalVisible(true);
+
+      return;
+    }
+
+    router.push("/rivals");
+  };
+
+  const handleEndDay = () => {
+    if (!world || !ludus) {
+      return;
+    }
+
+    if (bankruptcyState.bankrupt) {
+      router.push("/financial-status");
+      return;
+    }
+
+    const finishedDay = world.currentDay;
+    const oldDenarius = ludus.denarius;
+
+    endDay();
+
+    const newState = useGameStore.getState();
+
+    const newWorld = newState.world;
+    const newLudus = newState.playerLudus;
+    const dailyIncome = newState.lastDailyIncome;
+    const dailyExpenses = newState.lastDailyExpenses;
+    const financialState = newState.bankruptcyState;
+    const financialMessage = newState.lastFinancialMessage;
+
+    if (!newWorld || !newLudus) {
+      return;
+    }
+
+    const income = dailyIncome?.totalIncome ?? 0;
+    const expenses = dailyExpenses?.totalCost ?? 0;
+
+    const net = income - expenses;
+
+    const denariusDifference = newLudus.denarius - oldDenarius;
+
+    const netText = net >= 0 ? `+${net} D` : `${net} D`;
+
+    const moneyChangeText =
+      denariusDifference >= 0
+        ? `+${denariusDifference} D`
+        : `${denariusDifference} D`;
+
+    if (financialState.bankrupt) {
+      setModalTitle("LUDUS İFLAS ETTİ");
+
+      setModalMessage(
+        [
+          `Gelir: +${income} D`,
+          `Gider: -${expenses} D`,
+          `Net: ${netText}`,
+          "",
+          `Toplam Denarius: ${newLudus.denarius} D`,
+          `Toplam Borç: ${financialState.totalDebt} D`,
+          "",
+          financialMessage ?? "Ludus borçlarını ödeyemedi.",
+        ].join("\n"),
+      );
+
+      setGoToFinancialStatusAfterModal(true);
+      setModalVisible(true);
+
+      return;
+    }
+
+    if (
+      financialState.status === "debt" ||
+      financialState.status === "critical"
+    ) {
+      const remainingDays = Math.max(
+        0,
+        MAX_DEBT_DAYS - financialState.debtDays,
+      );
+
+      setModalTitle(
+        financialState.status === "critical" ? "MALİ KRİZ" : "LUDUS BORÇTA",
+      );
+
+      setModalMessage(
+        [
+          `Gelir: +${income} D`,
+          `Gider: -${expenses} D`,
+          `Net: ${netText}`,
+          "",
+          `Kasa: ${newLudus.denarius} D`,
+          `Borç: ${financialState.totalDebt} D`,
+          `Borçlu gün: ${financialState.debtDays}/${MAX_DEBT_DAYS}`,
+          "",
+          `İflasa kalan süre: ${remainingDays} gün`,
+          "",
+          financialMessage ?? "Ekonomiyi toparlamalısın.",
+        ].join("\n"),
+      );
+
+      setModalVisible(true);
+
+      return;
+    }
+
+    if (financialMessage) {
+      setModalTitle("EKONOMİ TOPARLANDI");
+
+      setModalMessage(
+        [
+          `Gelir: +${income} D`,
+          `Gider: -${expenses} D`,
+          `Net: ${netText}`,
+          "",
+          `Kasa değişimi: ${moneyChangeText}`,
+          `Toplam Denarius: ${newLudus.denarius} D`,
+          "",
+          financialMessage,
+          "",
+          `Yeni gün: ${newWorld.currentDay}`,
+          `Aksiyon: ${newLudus.actionPoints}/${newLudus.maxActionPoints}`,
+        ].join("\n"),
+      );
+
+      setModalVisible(true);
+
+      return;
+    }
+
+    setModalTitle(`GÜN ${finishedDay} TAMAMLANDI`);
+
+    setModalMessage(
+      [
+        `Gelir: +${income} D`,
+        `Gider: -${expenses} D`,
+        `Net: ${netText}`,
+        "",
+        `Kasa değişimi: ${moneyChangeText}`,
+        `Toplam Denarius: ${newLudus.denarius} D`,
+        "",
+        `Mali Durum: ${getFinancialStatusLabel(financialState.status)}`,
+        "",
+        `Yeni gün: ${newWorld.currentDay}`,
+        `Aksiyon: ${newLudus.actionPoints}/${newLudus.maxActionPoints}`,
+      ].join("\n"),
+    );
+
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+
+    if (goToFinancialStatusAfterModal) {
+      setGoToFinancialStatusAfterModal(false);
+      router.push("/financial-status");
+    }
+  };
+
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator color="#D4AF37" />
+      </View>
+    );
+  }
 
   if (!world || !ludus) {
     return (
-      <View style={styles.center}>
+      <View
+        style={[
+          styles.center,
+          {
+            paddingLeft: safeLeft,
+            paddingRight: safeRight,
+          },
+        ]}>
         <Text style={styles.errorTitle}>OYUN BULUNAMADI</Text>
 
         <Pressable
@@ -60,153 +350,321 @@ export default function MapScreen() {
     );
   }
 
+  const dailyRewardUnlocked = isFeatureUnlocked("daily_reward", ludus.level);
+  const rivalsUnlocked = isFeatureUnlocked("rivals", ludus.level);
+
+  const financialStatusLabel = getFinancialStatusLabel(bankruptcyState.status);
+
+  const currentLevelRequirement = getCurrentLevelRequirement(ludus.level);
+  const nextLevelRequirement = getNextLevelRequirement(ludus.level);
+
+  const levelProgress = getLudusLevelProgress(ludus.prestige, ludus.level);
+  const maxLevel = isMaxLudusLevel(ludus.level);
+
+  const earnedThisLevel = Math.max(0, ludus.prestige - currentLevelRequirement);
+
+  const prestigeNeededThisLevel =
+    nextLevelRequirement !== null
+      ? nextLevelRequirement - currentLevelRequirement
+      : 0;
+
   return (
     <View style={styles.container}>
-      {/* ÜST BAR */}
+      {/* TOP BAR */}
+      <View
+        style={[
+          styles.topBar,
+          {
+            paddingLeft: safeLeft,
+            paddingRight: safeRight,
+          },
+        ]}>
+        <View style={styles.identity}>
+          <Text numberOfLines={1} style={styles.ludusName}>
+            {ludus.name}
+          </Text>
 
-      <View style={styles.topBar}>
-        <View>
-          <Text style={styles.ludusName}>{ludus.name}</Text>
+          <Text numberOfLines={1} style={styles.lanista}>
+            {ludus.lanistaName}
+          </Text>
+        </View>
 
-          <Text style={styles.lanista}>Lanista: {ludus.lanistaName}</Text>
+        <View style={styles.levelSection}>
+          <View style={styles.levelTopRow}>
+            <Text style={styles.levelLabel}>LV. {ludus.level}</Text>
+
+            <Text style={styles.levelProgressText}>
+              {maxLevel
+                ? "MAX"
+                : `${earnedThisLevel} / ${prestigeNeededThisLevel}`}
+            </Text>
+          </View>
+
+          <View style={styles.levelBarBackground}>
+            <View
+              style={[
+                styles.levelBarFill,
+                {
+                  width: `${levelProgress}%`,
+                },
+              ]}
+            />
+          </View>
         </View>
 
         <View style={styles.resources}>
-          <Text style={styles.resource}>LV. {ludus.level}</Text>
+          <Pressable onPress={() => router.push("/financial-status")}>
+            <Text
+              style={[
+                styles.resource,
+                ludus.denarius < 0 && styles.debtResource,
+              ]}>
+              🪙 {ludus.denarius}
+            </Text>
+          </Pressable>
 
-          <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
-
-          <Text style={styles.resource}>⭐ {ludus.fame}</Text>
+          <Text style={styles.resource}>★ {ludus.fame}</Text>
 
           <Text style={styles.resource}>
             ⚡ {ludus.actionPoints}/{ludus.maxActionPoints}
           </Text>
 
+          {bankruptcyState.status !== "stable" && (
+            <Pressable
+              style={[
+                styles.financialBadge,
+                bankruptcyState.status === "warning" && styles.warningBadge,
+                bankruptcyState.status === "debt" && styles.debtBadge,
+                bankruptcyState.status === "critical" && styles.criticalBadge,
+                bankruptcyState.status === "bankrupt" && styles.bankruptBadge,
+              ]}
+              onPress={() => router.push("/financial-status")}>
+              <Text style={styles.financialBadgeText}>
+                {financialStatusLabel}
+              </Text>
+            </Pressable>
+          )}
+
+          <View style={styles.resourceDivider} />
+
           <Text style={styles.day}>GÜN {world.currentDay}</Text>
+
+          <Pressable
+            style={[
+              styles.endDayButton,
+              bankruptcyState.bankrupt && styles.disabledEndDayButton,
+            ]}
+            onPress={handleEndDay}>
+            <Text style={styles.endDayButtonText}>
+              {bankruptcyState.bankrupt ? "İFLAS" : "GÜNÜ BİTİR"}
+            </Text>
+          </Pressable>
         </View>
       </View>
 
-      {/* HARİTA */}
+      {/* REAL ROME MAP */}
+      <ImageBackground
+        source={require("../assets/images/map/rome-map.png")}
+        resizeMode="cover"
+        style={styles.map}
+        imageStyle={styles.mapImage}>
+        <View style={styles.mapShade} />
 
-      <View style={styles.map}>
-        <View style={styles.mapHeader}>
+        <View
+          pointerEvents="none"
+          style={[
+            styles.mapHeader,
+            {
+              left: safeLeft,
+            },
+          ]}>
           <Text style={styles.mapEyebrow}>ROMA</Text>
-
           <Text style={styles.mapTitle}>ŞEHİR HARİTASI</Text>
         </View>
 
-        <View style={styles.roadHorizontal} />
-        <View style={styles.roadVertical} />
+        {/* TOP ACTIONS */}
+        <View
+          style={[
+            styles.mapActions,
+            {
+              right: safeRight,
+            },
+          ]}>
+          <Pressable
+            style={styles.topAction}
+            onPress={() => router.push("/rewarded-ads")}>
+            <Text style={styles.topActionText}>ÖDÜLLER</Text>
+          </Pressable>
 
-        {/* SOL ÜST */}
+          <Pressable
+            style={styles.topAction}
+            onPress={() => router.push("/achievements")}>
+            <Text style={styles.topActionText}>BAŞARIMLAR</Text>
+          </Pressable>
 
+          <Pressable
+            style={styles.topAction}
+            onPress={() => router.push("/regions")}>
+            <Text style={styles.topActionText}>BÖLGELER</Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.topAction,
+              dailyRewardAvailable && styles.activeTopAction,
+              !TEST_MODE && !dailyRewardUnlocked && styles.lockedTopButton,
+            ]}
+            onPress={handleDailyReward}>
+            <Text
+              style={[
+                styles.topActionText,
+                dailyRewardAvailable && styles.activeTopActionText,
+                !TEST_MODE && !dailyRewardUnlocked && styles.lockedTopText,
+              ]}>
+              {!TEST_MODE && !dailyRewardUnlocked ? "🔒 " : ""}
+              GÜNLÜK ÇARK
+            </Text>
+
+            {dailyRewardAvailable && (TEST_MODE || dailyRewardUnlocked) && (
+              <View style={styles.rewardDot} />
+            )}
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.topAction,
+              !TEST_MODE && !rivalsUnlocked && styles.lockedTopButton,
+            ]}
+            onPress={handleRivals}>
+            <Text
+              style={[
+                styles.topActionText,
+                !TEST_MODE && !rivalsUnlocked && styles.lockedTopText,
+              ]}>
+              {!TEST_MODE && !rivalsUnlocked ? "🔒 " : ""}
+              RAKİPLER
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* MAP LOCATIONS */}
+
+        {/* Sol üst büyük eğitim kompleksi */}
         <MapLocation
           title="LUDUS"
           subtitle="Hanedanını yönet"
+          feature="ludus"
           currentLevel={ludus.level}
-          onPress={() => router.push("/gladiators")}
+          onPress={() => router.push("/ludus")}
           style={styles.ludusLocation}
         />
 
-        {/* ÜST ORTA */}
-
+        {/* Üst orta büyük arena */}
         <MapLocation
           title="ARENA"
           subtitle="Şöhret için savaş"
+          feature="arena"
           currentLevel={ludus.level}
+          onPress={() => router.push("/arena")}
           style={styles.arenaLocation}
         />
 
-        {/* SAĞ ÜST */}
-
+        {/* Sağ orta pazar meydanı */}
         <MapLocation
           title="GLADYATÖR PAZARI"
           subtitle="Yeni savaşçılar bul"
+          feature="market"
           currentLevel={ludus.level}
           onPress={() => router.push("/market")}
           style={styles.marketLocation}
         />
 
-        {/* SOL ALT */}
-
+        {/* Sol orta dumanlı atölye */}
         <MapLocation
           title="DEMİRCİ"
-          levelRequired={2}
+          feature="blacksmith"
           currentLevel={ludus.level}
           style={styles.blacksmithLocation}
         />
 
-        {/* ORTA */}
-
+        {/* Alt orta sol */}
         <MapLocation
           title="TAVERNA"
-          levelRequired={4}
+          subtitle="Moral ve olaylar"
+          feature="tavern"
           currentLevel={ludus.level}
+          onPress={() => router.push("/tavern")}
           style={styles.tavernLocation}
         />
 
-        {/* SAĞ ORTA */}
-
+        {/* Alt orta sağ */}
         <MapLocation
           title="REVİR"
-          levelRequired={5}
+          feature="infirmary"
           currentLevel={ludus.level}
           style={styles.infirmaryLocation}
         />
 
-        {/* SOL ALT 2 */}
-
+        {/* Sol alt kayalık alan */}
         <MapLocation
           title="MADEN"
-          levelRequired={7}
+          feature="mine"
           currentLevel={ludus.level}
           style={styles.mineLocation}
         />
 
-        {/* SAĞ ALT */}
-
+        {/* Sağ alt gösterişli bina */}
         <MapLocation
           title="OYUN EVİ"
-          levelRequired={8}
+          subtitle="Şans oyunları"
+          feature="gambling_house"
           currentLevel={ludus.level}
+          onPress={() => router.push("/gambling-house")}
           style={styles.gamblingLocation}
         />
+      </ImageBackground>
 
-        {/* TEST / GEÇİCİ */}
-
-        <Pressable
-          style={styles.rivalsButton}
-          onPress={() => router.push("/rivals")}>
-          <Text style={styles.rivalsButtonText}>RAKİP LUDUSLAR</Text>
-        </Pressable>
-      </View>
+      <GameModal
+        visible={modalVisible}
+        title={modalTitle}
+        message={modalMessage}
+        onClose={handleModalClose}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: "#0B0906",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   container: {
     flex: 1,
-    backgroundColor: "#0B0A08",
+    backgroundColor: "#0B0906",
   },
 
   center: {
     flex: 1,
-    backgroundColor: "#0B0A08",
+    backgroundColor: "#0B0906",
     alignItems: "center",
     justifyContent: "center",
   },
 
   errorTitle: {
     color: "#DDB936",
-    fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 20,
+    letterSpacing: 2,
   },
 
   menuButton: {
     borderWidth: 1,
-    borderColor: "#DDB936",
-    borderRadius: 5,
+    borderColor: "#9B7C31",
+    borderRadius: 3,
     paddingHorizontal: 22,
     paddingVertical: 10,
     marginTop: 20,
@@ -214,250 +672,373 @@ const styles = StyleSheet.create({
 
   menuButtonText: {
     color: "#DDB936",
-    fontWeight: "bold",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 10,
   },
-
-  /* TOP BAR */
 
   topBar: {
     height: 64,
-    paddingHorizontal: 24,
-
-    backgroundColor: "#0E0C0A",
-
+    backgroundColor: "#100D08",
     borderBottomWidth: 1,
-    borderBottomColor: "#332C1D",
-
+    borderBottomColor: "#332A1A",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+  },
+
+  identity: {
+    width: 165,
+    paddingRight: 14,
   },
 
   ludusName: {
     color: "#DDB936",
-    fontSize: 17,
-    fontWeight: "bold",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 14,
+    letterSpacing: 0.7,
   },
 
   lanista: {
-    color: "#706B63",
-    fontSize: 8,
+    color: "#81796B",
+    fontSize: 9,
     marginTop: 2,
   },
 
-  resources: {
+  levelSection: {
+    width: 185,
+    marginRight: 20,
+  },
+
+  levelTopRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 18,
+    justifyContent: "space-between",
+    marginBottom: 5,
+  },
+
+  levelLabel: {
+    color: "#DDB936",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 9,
+    letterSpacing: 0.8,
+  },
+
+  levelProgressText: {
+    color: "#9D927B",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 8,
+  },
+
+  levelBarBackground: {
+    width: "100%",
+    height: 6,
+    backgroundColor: "#2B261C",
+    borderWidth: 1,
+    borderColor: "#4B4028",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+
+  levelBarFill: {
+    height: "100%",
+    backgroundColor: "#D4AF37",
+    borderRadius: 2,
+  },
+
+  resources: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 11,
   },
 
   resource: {
-    color: "#DED4B7",
-    fontSize: 10,
-    fontWeight: "bold",
+    color: "#D9CFB5",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 9,
+  },
+
+  resourceDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: "#3A3121",
+  },
+
+  debtResource: {
+    color: "#D86E67",
+  },
+
+  financialBadge: {
+    height: 25,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderRadius: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#17140F",
+  },
+
+  warningBadge: {
+    borderColor: "#8A7132",
+  },
+
+  debtBadge: {
+    borderColor: "#9B5D31",
+  },
+
+  criticalBadge: {
+    borderColor: "#9A4039",
+    backgroundColor: "#211210",
+  },
+
+  bankruptBadge: {
+    borderColor: "#B3453D",
+    backgroundColor: "#2A100F",
+  },
+
+  financialBadgeText: {
+    color: "#D7B86B",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 7,
   },
 
   day: {
     color: "#B99B4D",
+    fontFamily: "Cinzel_600SemiBold",
     fontSize: 9,
-    fontWeight: "bold",
   },
 
-  /* MAP */
+  endDayButton: {
+    height: 31,
+    paddingHorizontal: 12,
+    backgroundColor: "#DDB936",
+    borderRadius: 3,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  disabledEndDayButton: {
+    backgroundColor: "#7E3934",
+  },
+
+  endDayButtonText: {
+    color: "#11100D",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 8,
+    letterSpacing: 0.5,
+  },
 
   map: {
     flex: 1,
     position: "relative",
-
-    margin: 12,
-
     overflow: "hidden",
+  },
 
-    borderWidth: 1,
-    borderColor: "#30291D",
+  mapImage: {
+    width: "100%",
+    height: "100%",
+  },
 
-    borderRadius: 10,
-
-    backgroundColor: "#15110C",
+  mapShade: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(6, 4, 2, 0.12)",
   },
 
   mapHeader: {
     position: "absolute",
     top: 12,
-    left: 16,
-
-    zIndex: 5,
+    zIndex: 20,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 3,
+    backgroundColor: "rgba(13, 10, 6, 0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(132, 105, 48, 0.45)",
   },
 
   mapEyebrow: {
-    color: "#77663A",
-    fontSize: 7,
-    fontWeight: "bold",
-    letterSpacing: 2,
+    color: "#B99B4D",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 8,
+    letterSpacing: 2.5,
   },
 
   mapTitle: {
-    color: "#B99B4D",
+    color: "#E1C66E",
+    fontFamily: "Cinzel_700Bold",
     fontSize: 14,
-    fontWeight: "bold",
-    letterSpacing: 2,
+    letterSpacing: 1.5,
     marginTop: 1,
   },
 
-  roadHorizontal: {
+  mapActions: {
     position: "absolute",
-
-    left: "8%",
-    right: "8%",
-
-    top: "49%",
-
-    height: 18,
-
-    backgroundColor: "#211B13",
-
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-
-    borderColor: "#3A3021",
+    top: 12,
+    zIndex: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
 
-  roadVertical: {
-    position: "absolute",
-
-    top: "14%",
-    bottom: "10%",
-
-    left: "49%",
-
-    width: 18,
-
-    backgroundColor: "#211B13",
-
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-
-    borderColor: "#3A3021",
+  topAction: {
+    height: 29,
+    paddingHorizontal: 9,
+    borderWidth: 1,
+    borderColor: "#75602F",
+    borderRadius: 3,
+    backgroundColor: "rgba(13, 10, 6, 0.82)",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
 
-  /* LOCATIONS */
+  topActionText: {
+    color: "#C6A653",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 7.5,
+    letterSpacing: 0.3,
+  },
+
+  activeTopAction: {
+    borderColor: "#DDB936",
+    backgroundColor: "rgba(38, 30, 12, 0.9)",
+  },
+
+  activeTopActionText: {
+    color: "#F1D46F",
+  },
+
+  lockedTopButton: {
+    opacity: 0.55,
+    borderColor: "#4B463D",
+  },
+
+  lockedTopText: {
+    color: "#777168",
+  },
+
+  rewardDot: {
+    position: "absolute",
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: "#8FAF72",
+    right: -3,
+    top: -3,
+  },
 
   location: {
     position: "absolute",
+    width: 130,
+    height: 72,
+    zIndex: 10,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingBottom: 3,
+  },
 
-    width: 135,
-    height: 70,
-
-    backgroundColor: "#1E1912",
-
+  locationLabel: {
+    minWidth: 92,
+    maxWidth: 130,
+    minHeight: 31,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "rgba(12, 9, 5, 0.86)",
     borderWidth: 1,
-    borderColor: "#66542A",
-
-    borderRadius: 8,
-
+    borderColor: "rgba(184, 145, 58, 0.8)",
+    borderRadius: 3,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  lockedLocation: {
-    backgroundColor: "#15130F",
-    borderColor: "#302C25",
+  locationPressed: {
+    transform: [{ scale: 0.96 }],
   },
 
-  locationIcon: {
-    fontSize: 16,
+  lockedLocation: {
+    opacity: 0.7,
+  },
+
+  unavailableLocation: {
+    opacity: 0.72,
   },
 
   locationTitle: {
-    color: "#D8C88F",
-
-    fontSize: 9,
-    fontWeight: "bold",
-    letterSpacing: 0.7,
-
-    marginTop: 2,
+    color: "#F0D77D",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 8.5,
+    letterSpacing: 0.4,
+    textAlign: "center",
   },
 
   locationSubtitle: {
-    color: "#736C61",
-    fontSize: 6.5,
+    color: "#C3B79A",
+    fontSize: 7,
+    marginTop: 2,
+    textAlign: "center",
+  },
+
+  unavailableText: {
+    color: "#8C8578",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 7,
     marginTop: 2,
   },
 
   lockedText: {
-    color: "#5B5751",
+    color: "#918B81",
   },
 
   levelText: {
-    color: "#504C47",
-
-    fontSize: 6.5,
-    fontWeight: "bold",
-
+    color: "#9B9489",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 7,
     marginTop: 2,
   },
 
+  /*
+   * Haritadaki gerçek yapıların üzerine yerleştirildi.
+   * Görselin cihazdaki kırpılmasına göre birkaç yüzde puan
+   * ince ayar gerekebilir.
+   */
+
   ludusLocation: {
-    left: "8%",
-    top: "22%",
+    left: "15%",
+    top: "18%",
   },
 
   arenaLocation: {
-    left: "42%",
-    top: "15%",
+    left: "51%",
+    top: "13%",
   },
 
   marketLocation: {
-    right: "7%",
-    top: "24%",
+    right: "8%",
+    top: "34%",
   },
 
   blacksmithLocation: {
-    left: "15%",
-    bottom: "13%",
+    left: "19%",
+    top: "47%",
   },
 
   tavernLocation: {
-    left: "42%",
-    top: "56%",
+    left: "39%",
+    bottom: "9%",
   },
 
   infirmaryLocation: {
-    right: "12%",
-    top: "54%",
+    left: "59%",
+    bottom: "9%",
   },
 
   mineLocation: {
     left: "3%",
-    bottom: "2%",
+    bottom: "5%",
   },
 
   gamblingLocation: {
-    right: "4%",
-    bottom: "3%",
-  },
-
-  /* TEMP */
-
-  rivalsButton: {
-    position: "absolute",
-
-    right: 12,
-    top: 12,
-
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-
-    borderWidth: 1,
-    borderColor: "#4A3F27",
-
-    borderRadius: 4,
-  },
-
-  rivalsButtonText: {
-    color: "#7F6C3A",
-
-    fontSize: 7,
-    fontWeight: "bold",
+    right: "6%",
+    bottom: "5%",
   },
 });

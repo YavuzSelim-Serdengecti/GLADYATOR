@@ -1,35 +1,43 @@
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    useWindowDimensions,
-    View,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
 } from "react-native";
 
-import { generateGladiator } from "../src/features/gladiators/generateGladiator";
+import GameModal from "../src/components/GameModal";
+import { generateGladiatorPool } from "../src/features/gladiators/generateGladiatorPool";
 import { createAuction } from "../src/features/market/createAuction";
 import { useGameStore } from "../src/store/gameStore";
 import { Auction } from "../src/types/game";
+
+const MARKET_ACTION_COST = 1;
+const MARKET_REFRESH_COST = 1;
+const MARKET_GLADIATOR_COUNT = 5;
 
 export default function MarketScreen() {
   const world = useGameStore((state) => state.world);
   const ludus = useGameStore((state) => state.playerLudus);
 
   const buyGladiator = useGameStore((state) => state.buyGladiator);
-
   const aiBuyGladiator = useGameStore((state) => state.aiBuyGladiator);
-
   const aiLuduses = useGameStore((state) => state.aiLuduses);
+
+  const spendActionPoints = useGameStore((state) => state.spendActionPoints);
 
   const { width, height } = useWindowDimensions();
 
   const listRef = useRef<FlatList<Auction>>(null);
 
   const [auctions, setAuctions] = useState<Auction[]>([]);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
 
   const aiBidLimits = useRef<Record<string, number>>({});
   const aiAuctionOwners = useRef<Record<string, string>>({});
@@ -41,27 +49,32 @@ export default function MarketScreen() {
 
   const cardHeight = Math.max(245, Math.min(height - 145, 285));
 
-  // 5 açık artırma oluştur.
-  useEffect(() => {
+  const showModal = (title: string, message: string) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalVisible(true);
+  };
+
+  const createMarketAuctions = () => {
     if (!world || aiLuduses.length === 0) {
       return;
     }
 
-    const newAuctions = Array.from({ length: 5 }, () => {
-      const gladiator = generateGladiator({
-        worldId: world.id,
-        profile: "random",
-      });
+    aiBidLimits.current = {};
+    aiAuctionOwners.current = {};
 
+    const gladiatorPool = generateGladiatorPool({
+      worldId: world.id,
+      count: MARKET_GLADIATOR_COUNT,
+    });
+
+    const newAuctions = gladiatorPool.map((gladiator) => {
       const auction = createAuction(gladiator);
 
-      // Her açık artırmaya rastgele bir rakip Ludus atanıyor.
       const randomAi = aiLuduses[Math.floor(Math.random() * aiLuduses.length)];
 
       aiAuctionOwners.current[auction.id] = randomAi.id;
 
-      // AI'nın bu gladyatör için çıkabileceği
-      // maksimum fiyat.
       let multiplier = 1.15;
 
       if (randomAi.aiPersonality === "warrior") {
@@ -84,7 +97,6 @@ export default function MarketScreen() {
         multiplier = 1.2;
       }
 
-      // Biraz rastgelelik ekliyoruz.
       const randomBonus = Math.random() * 0.15;
 
       aiBidLimits.current[auction.id] = Math.round(
@@ -95,19 +107,48 @@ export default function MarketScreen() {
     });
 
     setAuctions(newAuctions);
-  }, [world?.id]);
 
-  // Pazara girildiğinde liste baştan başlasın.
-  useEffect(() => {
-    const timeout = setTimeout(() => {
+    setTimeout(() => {
       listRef.current?.scrollToOffset({
         offset: 0,
         animated: false,
       });
     }, 50);
+  };
 
-    return () => clearTimeout(timeout);
-  }, []);
+  useEffect(() => {
+    createMarketAuctions();
+  }, [world?.id]);
+
+  const handleRefreshMarket = () => {
+    if (!ludus) {
+      return;
+    }
+
+    if (ludus.actionPoints < MARKET_REFRESH_COST) {
+      showModal(
+        "YETERSİZ AKSİYON PUANI",
+        `Pazarı yenilemek için ${MARKET_REFRESH_COST} aksiyon puanı gerekiyor.\n\nKalan aksiyon: ${ludus.actionPoints}/${ludus.maxActionPoints}`,
+      );
+
+      return;
+    }
+
+    const success = spendActionPoints(MARKET_REFRESH_COST);
+
+    if (!success) {
+      showModal("YENİLEME BAŞARISIZ", "Pazar yenilenemedi.");
+
+      return;
+    }
+
+    createMarketAuctions();
+
+    showModal(
+      "PAZAR YENİLENDİ",
+      `${MARKET_GLADIATOR_COUNT} yeni gladyatör açık artırmaya çıkarıldı.\n\n⚡ ${MARKET_REFRESH_COST} aksiyon puanı harcandı.`,
+    );
+  };
 
   const getAiBidderValue = (
     aiLudusId: string,
@@ -144,17 +185,21 @@ export default function MarketScreen() {
       return;
     }
 
+    if (ludus.actionPoints < MARKET_ACTION_COST) {
+      showModal(
+        "YETERSİZ AKSİYON PUANI",
+        `Pazardan gladyatör satın almak için ${MARKET_ACTION_COST} aksiyon puanı gerekiyor.\n\nKalan aksiyon: ${ludus.actionPoints}/${ludus.maxActionPoints}`,
+      );
+
+      return;
+    }
+
     const playerBid = auction.currentBid + auction.minNextBid;
 
     const aiLudusId = aiAuctionOwners.current[auction.id];
 
     const aiLudus = aiLuduses.find((item) => item.id === aiLudusId);
 
-    /*
-     * Oyuncunun yeni teklife parası yetmiyorsa:
-     * Eğer AI zaten en yüksek teklif sahibiyse,
-     * açık artırmayı AI kazanır.
-     */
     if (ludus.denarius < playerBid) {
       if (
         aiLudus &&
@@ -170,8 +215,8 @@ export default function MarketScreen() {
         if (aiWins) {
           removeAuction(auction.id);
 
-          Alert.alert(
-            "Açık Artırmayı Kaybettin",
+          showModal(
+            "AÇIK ARTIRMAYI KAYBETTİN",
             `${aiLudus.name}, ${auction.gladiator.name} adlı gladyatörü ${auction.currentBid} Denarius karşılığında satın aldı.`,
           );
 
@@ -179,8 +224,8 @@ export default function MarketScreen() {
         }
       }
 
-      Alert.alert(
-        "Yetersiz Denarius",
+      showModal(
+        "YETERSİZ DENARIUS",
         `Bir sonraki teklif için ${playerBid} Denarius gerekiyor.`,
       );
 
@@ -195,9 +240,6 @@ export default function MarketScreen() {
     const aiWillContinue =
       !!aiLudus && aiBid <= aiLimit && aiBid <= aiLudus.denarius;
 
-    /*
-     * AI karşı teklif veriyor.
-     */
     if (aiWillContinue && aiLudus) {
       const bidderValue = getAiBidderValue(aiLudus.id);
 
@@ -213,30 +255,29 @@ export default function MarketScreen() {
         ),
       );
 
-      Alert.alert(
-        "Karşı Teklif!",
+      showModal(
+        "KARŞI TEKLİF!",
         `${aiLudus.name}, fiyatı ${aiBid} Denarius'a yükseltti.`,
       );
 
       return;
     }
 
-    /*
-     * AI devam etmiyorsa oyuncu kazanıyor.
-     */
     const success = buyGladiator(auction.gladiator, playerBid);
 
     if (!success) {
-      Alert.alert("Satın Alma Başarısız", "Gladyatör satın alınamadı.");
+      showModal("SATIN ALMA BAŞARISIZ", "Gladyatör satın alınamadı.");
 
       return;
     }
 
+    spendActionPoints(MARKET_ACTION_COST);
+
     removeAuction(auction.id);
 
-    Alert.alert(
-      "Açık Artırmayı Kazandın!",
-      `${auction.gladiator.name}, ${playerBid} Denarius karşılığında Ludus'una katıldı.`,
+    showModal(
+      "AÇIK ARTIRMAYI KAZANDIN!",
+      `${auction.gladiator.name}, ${playerBid} Denarius karşılığında Ludus'una katıldı.\n\n⚡ ${MARKET_ACTION_COST} aksiyon puanı harcandı.`,
     );
   };
 
@@ -264,18 +305,51 @@ export default function MarketScreen() {
         </View>
 
         <View style={styles.headerRight}>
-          <Text style={styles.money}>🪙 {ludus.denarius} D</Text>
+          <View style={styles.resources}>
+            <Text style={styles.actionPoints}>
+              ⚡ {ludus.actionPoints}/{ludus.maxActionPoints}
+            </Text>
 
-          <Pressable onPress={() => router.back()}>
-            <Text style={styles.backText}>← HARİTAYA DÖN</Text>
-          </Pressable>
+            <Text style={styles.money}>🪙 {ludus.denarius} D</Text>
+          </View>
+
+          <View style={styles.headerButtons}>
+            <Pressable
+              style={styles.specialButton}
+              onPress={() => router.push("/special-gladiators")}>
+              <Text style={styles.specialButtonText}>★ ÖZEL GLADYATÖRLER</Text>
+            </Pressable>
+
+            <Pressable onPress={() => router.back()}>
+              <Text style={styles.backText}>← HARİTAYA DÖN</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>BUGÜNKÜ AÇIK ARTIRMALAR</Text>
 
-        <Text style={styles.refreshText}>Yeni açık artırma: 3 gün sonra</Text>
+        <View style={styles.refreshArea}>
+          <Text style={styles.refreshText}>Satın alma: ⚡ 1 AP</Text>
+
+          <Pressable
+            style={[
+              styles.refreshButton,
+              ludus.actionPoints < MARKET_REFRESH_COST &&
+                styles.disabledRefreshButton,
+            ]}
+            onPress={handleRefreshMarket}>
+            <Text
+              style={[
+                styles.refreshButtonText,
+                ludus.actionPoints < MARKET_REFRESH_COST &&
+                  styles.disabledRefreshButtonText,
+              ]}>
+              ↻ YENİLE · 1 AP
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
       <FlatList
@@ -295,7 +369,7 @@ export default function MarketScreen() {
             <Text style={styles.emptyTitle}>AÇIK ARTIRMA TAMAMLANDI</Text>
 
             <Text style={styles.emptyText}>
-              Yeni savaşçılar birkaç gün sonra pazara gelecek.
+              Yeni savaşçılar için pazarı yenileyebilirsin.
             </Text>
           </View>
         }
@@ -305,6 +379,8 @@ export default function MarketScreen() {
           const nextBid = auction.currentBid + auction.minNextBid;
 
           const bidderName = getBidderName(auction);
+
+          const noActionPoints = ludus.actionPoints < MARKET_ACTION_COST;
 
           return (
             <View
@@ -379,14 +455,30 @@ export default function MarketScreen() {
                 </View>
 
                 <Pressable
-                  style={styles.bidButton}
+                  style={[
+                    styles.bidButton,
+                    noActionPoints && styles.disabledBidButton,
+                  ]}
                   onPress={() => handleBid(auction)}>
-                  <Text style={styles.bidButtonText}>TEKLİF {nextBid} D</Text>
+                  <Text
+                    style={[
+                      styles.bidButtonText,
+                      noActionPoints && styles.disabledBidButtonText,
+                    ]}>
+                    {noActionPoints ? "YETERSİZ AP" : `TEKLİF ${nextBid} D`}
+                  </Text>
                 </Pressable>
               </View>
             </View>
           );
         }}
+      />
+
+      <GameModal
+        visible={modalVisible}
+        title={modalTitle}
+        message={modalMessage}
+        onClose={() => setModalVisible(false)}
       />
     </View>
   );
@@ -445,6 +537,42 @@ const styles = StyleSheet.create({
     gap: 5,
   },
 
+  resources: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  headerButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  specialButton: {
+    height: 25,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#80632F",
+    borderRadius: 4,
+    backgroundColor: "#17140F",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  specialButtonText: {
+    color: "#DDB936",
+    fontSize: 7,
+    fontWeight: "bold",
+    letterSpacing: 0.5,
+  },
+
+  actionPoints: {
+    color: "#DDB936",
+    fontSize: 11,
+    fontWeight: "bold",
+  },
+
   money: {
     color: "#E5D8AB",
     fontSize: 14,
@@ -463,7 +591,7 @@ const styles = StyleSheet.create({
   },
 
   sectionHeader: {
-    height: 32,
+    minHeight: 36,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -476,9 +604,41 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
 
+  refreshArea: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
   refreshText: {
-    color: "#5F5A52",
-    fontSize: 9,
+    color: "#77716A",
+    fontSize: 8,
+  },
+
+  refreshButton: {
+    height: 27,
+    paddingHorizontal: 11,
+    borderWidth: 1,
+    borderColor: "#80632F",
+    borderRadius: 4,
+    backgroundColor: "#17140F",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  refreshButtonText: {
+    color: "#DDB936",
+    fontSize: 8,
+    fontWeight: "bold",
+  },
+
+  disabledRefreshButton: {
+    borderColor: "#3F392E",
+    backgroundColor: "#211E19",
+  },
+
+  disabledRefreshButtonText: {
+    color: "#6E675A",
   },
 
   list: {
@@ -605,7 +765,7 @@ const styles = StyleSheet.create({
 
   priceLabel: {
     color: "#69635B",
-    fontSize: 6.5,
+    fontSize: 7,
     fontWeight: "bold",
     letterSpacing: 0.7,
   },
@@ -631,6 +791,16 @@ const styles = StyleSheet.create({
     color: "#11100D",
     fontSize: 7.5,
     fontWeight: "bold",
+  },
+
+  disabledBidButton: {
+    backgroundColor: "#29251D",
+    borderWidth: 1,
+    borderColor: "#4B4435",
+  },
+
+  disabledBidButtonText: {
+    color: "#716B5E",
   },
 
   empty: {

@@ -4,6 +4,8 @@ import { getNamesForOrigin, gladiatorOrigins } from "../../data/gladiatorNames";
 
 import { randomInt, randomItem } from "../../utils/random";
 
+import { generateGladiatorAppearance } from "./generateGladiatorAppearance";
+
 const gladiatorClasses: GladiatorClass[] = [
   "murmillo",
   "retiarius",
@@ -22,6 +24,7 @@ interface GenerateGladiatorOptions {
 function clampStat(value: number) {
   return Math.max(1, Math.min(100, value));
 }
+
 function calculateAveragePower(
   strength: number,
   endurance: number,
@@ -93,6 +96,7 @@ export function generateGladiator({
   const age = randomInt(18, 32);
 
   const origin = randomItem(gladiatorOrigins);
+
   const name = randomItem(getNamesForOrigin(origin));
 
   let strength = randomInt(35, 65);
@@ -169,10 +173,15 @@ export function generateGladiator({
   const potential = randomInt(45, 95);
 
   const finalStrength = clampStat(strength);
+
   const finalEndurance = clampStat(endurance);
+
   const finalAgility = clampStat(agility);
+
   const finalAttack = clampStat(attack);
+
   const finalDefense = clampStat(defense);
+
   const finalCourage = clampStat(courage);
 
   const averagePower = calculateAveragePower(
@@ -195,6 +204,8 @@ export function generateGladiator({
 
   const maxHp = 100;
 
+  const appearance = generateGladiatorAppearance();
+
   return {
     id: `gladiator-${Date.now()}-${Math.random()}`,
 
@@ -206,31 +217,51 @@ export function generateGladiator({
     origin,
 
     class: gladiatorClass,
-    status: ludusId ? "active" : "free",
+
     rarity,
+
     marketValue,
 
+    status: ludusId ? "active" : "free",
+
+    appearance,
+
+    injurySeverity: null,
+
+    injuryDaysRemaining: 0,
+
     strength: finalStrength,
+
     endurance: finalEndurance,
+
     agility: finalAgility,
+
     attack: finalAttack,
+
     defense: finalDefense,
+
     courage: finalCourage,
 
     morale: randomInt(55, 80),
+
     loyalty: randomInt(40, 70),
 
     potential,
 
     hp: maxHp,
+
     maxHp,
+
     fatigue: 0,
 
     experience: 0,
+
     fame: 0,
 
     wins: 0,
+
     losses: 0,
+
     winStreak: 0,
   };
 }

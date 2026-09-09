@@ -1,17 +1,26 @@
+import {
+  Cinzel_600SemiBold,
+  Cinzel_700Bold,
+  useFonts,
+} from "@expo-google-fonts/cinzel";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { generateGladiator } from "../src/features/gladiators/generateGladiator";
 import { useGameStore } from "../src/store/gameStore";
 
 export default function StarterGladiatorScreen() {
+  const insets = useSafeAreaInsets();
+
   const world = useGameStore((state) => state.world);
   const ludus = useGameStore((state) => state.playerLudus);
   const addGladiator = useGameStore((state) => state.addGladiator);
@@ -19,6 +28,14 @@ export default function StarterGladiatorScreen() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { width, height } = useWindowDimensions();
+
+  const [fontsLoaded] = useFonts({
+    Cinzel_600SemiBold,
+    Cinzel_700Bold,
+  });
+
+  const safeLeft = Math.max(26, insets.left + 12);
+  const safeRight = Math.max(26, insets.right + 12);
 
   const candidates = useMemo(() => {
     if (!world || !ludus) {
@@ -31,13 +48,11 @@ export default function StarterGladiatorScreen() {
         ludusId: ludus.id,
         profile: "strong",
       }),
-
       generateGladiator({
         worldId: world.id,
         ludusId: ludus.id,
         profile: "fast",
       }),
-
       generateGladiator({
         worldId: world.id,
         ludusId: ludus.id,
@@ -50,20 +65,13 @@ export default function StarterGladiatorScreen() {
     (gladiator) => gladiator.id === selectedId,
   );
 
-  /*
-    Kartların ekranı tamamen doldurmasını istemiyoruz.
-    Toplam ekran genişliğinin yaklaşık %70'ini kullanıyoruz.
-  */
-  const cardsTotalWidth = Math.min(width * 0.72, 900);
   const gap = 18;
 
-  const cardWidth = (cardsTotalWidth - gap * 2) / 3;
+  const usableWidth = width - safeLeft - safeRight;
 
-  /*
-    Küçük telefonlarda da alta taşmaması için
-    yüksekliği ekran yüksekliğine göre sınırlıyoruz.
-  */
-  const cardHeight = Math.min(Math.max(height - 135, 230), 285);
+  const cardWidth = Math.min(250, Math.max(205, (usableWidth - gap * 2) / 3));
+
+  const cardHeight = Math.min(290, Math.max(245, height - 145));
 
   const handleConfirm = () => {
     if (!selectedGladiator) {
@@ -75,10 +83,25 @@ export default function StarterGladiatorScreen() {
     router.replace("/map");
   };
 
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator color="#D4AF37" />
+      </View>
+    );
+  }
+
   if (!world || !ludus) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>Oyun bilgileri bulunamadı.</Text>
+      <View
+        style={[
+          styles.center,
+          {
+            paddingLeft: safeLeft,
+            paddingRight: safeRight,
+          },
+        ]}>
+        <Text style={styles.errorTitle}>OYUN BULUNAMADI</Text>
 
         <Pressable onPress={() => router.replace("/")}>
           <Text style={styles.backText}>ANA MENÜ</Text>
@@ -89,25 +112,27 @@ export default function StarterGladiatorScreen() {
 
   return (
     <View style={styles.container}>
-      {/* BAŞLIK */}
+      <View style={styles.background} />
 
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>LUDUSUNUN İLK SAVAŞÇISI</Text>
+      <View style={styles.overlay} />
 
-        <Text style={styles.title}>GLADYATÖRÜNÜ SEÇ</Text>
-      </View>
+      <View
+        style={[
+          styles.safeContent,
+          {
+            paddingLeft: safeLeft,
+            paddingRight: safeRight,
+          },
+        ]}>
+        <View style={styles.header}>
+          <Text style={styles.eyebrow}>İLK SAVAŞÇIN</Text>
 
-      {/* KARTLAR */}
+          <Text style={styles.title}>GLADYATÖRÜNÜ SEÇ</Text>
 
-      <View style={styles.cardsWrapper}>
-        <View
-          style={[
-            styles.cardsArea,
-            {
-              width: cardsTotalWidth,
-              gap,
-            },
-          ]}>
+          <View style={styles.titleLine} />
+        </View>
+
+        <View style={styles.cardsArea}>
           {candidates.map((gladiator, index) => {
             const selected = selectedId === gladiator.id;
 
@@ -126,8 +151,6 @@ export default function StarterGladiatorScreen() {
                   },
                   selected && styles.selectedCard,
                 ]}>
-                {/* PORTRE */}
-
                 <View style={styles.portrait}>
                   <Text style={styles.roleLabel}>{roleLabel}</Text>
 
@@ -137,18 +160,16 @@ export default function StarterGladiatorScreen() {
                     </View>
                   )}
 
-                  <Text style={styles.portraitIcon}>⚔️</Text>
+                  <Text style={styles.portraitIcon}>⚔</Text>
                 </View>
 
-                {/* İSİM */}
-
                 <View style={styles.identity}>
-                  <Text style={styles.name} numberOfLines={1}>
+                  <Text numberOfLines={1} style={styles.name}>
                     {gladiator.name}
                   </Text>
 
                   <Text style={styles.meta}>
-                    {gladiator.age} yaş • {gladiator.origin}
+                    {gladiator.age} YAŞ · {gladiator.origin.toUpperCase()}
                   </Text>
 
                   <Text style={styles.className}>
@@ -158,26 +179,22 @@ export default function StarterGladiatorScreen() {
 
                 <View style={styles.divider} />
 
-                {/* İSTATİSTİKLER */}
-
                 <View style={styles.statsGrid}>
-                  <Stat label="Güç" value={gladiator.strength} />
+                  <Stat label="GÜÇ" value={gladiator.strength} />
 
-                  <Stat label="Dayanıklılık" value={gladiator.endurance} />
+                  <Stat label="DAYANIKLILIK" value={gladiator.endurance} />
 
-                  <Stat label="Çeviklik" value={gladiator.agility} />
+                  <Stat label="ÇEVİKLİK" value={gladiator.agility} />
 
-                  <Stat label="Saldırı" value={gladiator.attack} />
+                  <Stat label="SALDIRI" value={gladiator.attack} />
 
-                  <Stat label="Savunma" value={gladiator.defense} />
+                  <Stat label="SAVUNMA" value={gladiator.defense} />
 
-                  <Stat label="Cesaret" value={gladiator.courage} />
+                  <Stat label="CESARET" value={gladiator.courage} />
                 </View>
 
-                {/* POTANSİYEL */}
-
                 <View style={styles.potentialRow}>
-                  <Text style={styles.potentialLabel}>Potansiyel</Text>
+                  <Text style={styles.potentialLabel}>POTANSİYEL</Text>
 
                   <Text style={styles.potentialValue}>???</Text>
                 </View>
@@ -185,32 +202,24 @@ export default function StarterGladiatorScreen() {
             );
           })}
         </View>
-      </View>
 
-      {/* ALT BUTON */}
-
-      <View style={styles.footer}>
-        <Text style={styles.footerHint}>
-          {selectedGladiator
-            ? `${selectedGladiator.name} seçildi`
-            : "Bir gladyatör seç"}
-        </Text>
-
-        <Pressable
-          disabled={!selectedGladiator}
-          onPress={handleConfirm}
-          style={[
-            styles.confirmButton,
-            !selectedGladiator && styles.disabledButton,
-          ]}>
-          <Text
+        <View style={styles.footer}>
+          <Pressable
+            disabled={!selectedGladiator}
+            onPress={handleConfirm}
             style={[
-              styles.confirmButtonText,
-              !selectedGladiator && styles.disabledText,
+              styles.confirmButton,
+              !selectedGladiator && styles.disabledButton,
             ]}>
-            LUDUSA KAT
-          </Text>
-        </Pressable>
+            <Text
+              style={[
+                styles.confirmButtonText,
+                !selectedGladiator && styles.disabledText,
+              ]}>
+              {selectedGladiator ? "LUDUSA KAT" : "BİR GLADYATÖR SEÇ"}
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -227,85 +236,107 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
-    backgroundColor: "#0B0A08",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-
-  center: {
-    flex: 1,
-    backgroundColor: "#0B0A08",
+    backgroundColor: "#0B0906",
     alignItems: "center",
     justifyContent: "center",
   },
 
-  /* HEADER */
+  container: {
+    flex: 1,
+    backgroundColor: "#100D08",
+    overflow: "hidden",
+  },
+
+  background: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#17120B",
+  },
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.28)",
+  },
+
+  safeContent: {
+    flex: 1,
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+
+  center: {
+    flex: 1,
+    backgroundColor: "#100D08",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   header: {
-    height: 58,
+    height: 68,
     alignItems: "center",
     justifyContent: "center",
   },
 
   eyebrow: {
-    color: "#8D773E",
-    fontSize: 8,
-    fontWeight: "bold",
-    letterSpacing: 2,
+    color: "#8D753B",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 9,
+    letterSpacing: 2.5,
   },
 
   title: {
-    color: "#DDB936",
-    fontSize: 23,
-    fontWeight: "bold",
-    letterSpacing: 3,
-    marginTop: 8,
+    color: "#DAB63F",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 22,
+    letterSpacing: 2.7,
+    marginTop: 5,
+
+    textShadowColor: "rgba(0,0,0,0.9)",
+    textShadowOffset: {
+      width: 1,
+      height: 2,
+    },
+    textShadowRadius: 4,
   },
 
-  /* CARDS */
-
-  cardsWrapper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+  titleLine: {
+    width: 55,
+    height: 2,
+    backgroundColor: "#B58D31",
+    marginTop: 6,
   },
 
   cardsArea: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 18,
   },
 
   card: {
-    backgroundColor: "#17140F",
-
+    backgroundColor: "rgba(20, 17, 12, 0.93)",
     borderWidth: 1,
-    borderColor: "#3D3524",
-    borderRadius: 8,
-
+    borderColor: "#443820",
+    borderRadius: 5,
     padding: 9,
   },
 
   selectedCard: {
-    borderColor: "#DDB936",
+    borderColor: "#D8B13C",
     borderWidth: 2,
-    backgroundColor: "#1B170F",
+    backgroundColor: "rgba(27, 22, 13, 0.96)",
   },
 
-  /* PORTRAIT */
-
   portrait: {
-    height: 62,
-
-    backgroundColor: "#211D16",
-    borderRadius: 5,
-
+    height: 68,
+    backgroundColor: "rgba(44, 36, 23, 0.75)",
+    borderWidth: 1,
+    borderColor: "#3B311E",
+    borderRadius: 3,
     alignItems: "center",
     justifyContent: "center",
-
     position: "relative",
   },
 
@@ -313,197 +344,163 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 7,
     left: 8,
-
-    color: "#B99B4D",
-
-    fontSize: 7,
-    fontWeight: "bold",
+    color: "#AD9149",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 8,
     letterSpacing: 1.1,
   },
 
   portraitIcon: {
-    fontSize: 24,
+    color: "#C9A64C",
+    fontSize: 26,
   },
 
   selectedBadge: {
     position: "absolute",
     top: 6,
     right: 6,
-
-    backgroundColor: "#DDB936",
-
+    borderWidth: 1,
+    borderColor: "#D6B03A",
+    backgroundColor: "#211B10",
     paddingHorizontal: 7,
     paddingVertical: 3,
-
-    borderRadius: 10,
+    borderRadius: 2,
   },
 
   selectedBadgeText: {
-    color: "#11100D",
-
-    fontSize: 6,
-    fontWeight: "bold",
+    color: "#DDB936",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 7,
+    letterSpacing: 0.7,
   },
 
-  /* IDENTITY */
-
   identity: {
-    height: 57,
-
+    height: 62,
     alignItems: "center",
     justifyContent: "center",
   },
 
   name: {
-    color: "#F0E6C8",
-
-    fontSize: 16,
-    fontWeight: "bold",
+    color: "#ECE0C1",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 14,
+    letterSpacing: 0.5,
   },
 
   meta: {
-    color: "#77716A",
-
-    fontSize: 7.5,
-    marginTop: 1,
+    color: "#766F62",
+    fontSize: 8,
+    marginTop: 3,
   },
 
   className: {
-    color: "#C3A34F",
-
-    fontSize: 7.5,
-    fontWeight: "bold",
+    color: "#B99B4D",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 8,
     letterSpacing: 1,
-
     marginTop: 3,
   },
 
   divider: {
     height: 1,
-    backgroundColor: "#332C1D",
+    backgroundColor: "#342B1B",
   },
-
-  /* STATS */
 
   statsGrid: {
     flex: 1,
-
     flexDirection: "row",
     flexWrap: "wrap",
-
     alignContent: "center",
     justifyContent: "space-between",
-
-    paddingVertical: 3,
+    paddingVertical: 5,
   },
 
   statItem: {
     width: "48%",
-
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-
-    marginVertical: 1,
+    marginVertical: 2,
   },
 
   statLabel: {
-    color: "#8A857D",
-    fontSize: 7.5,
+    color: "#82796B",
+    fontSize: 8,
   },
 
   statValue: {
-    color: "#E1D5AE",
-
-    fontSize: 7.5,
-    fontWeight: "bold",
+    color: "#E0D3B0",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 9,
   },
 
-  /* POTENTIAL */
-
   potentialRow: {
-    height: 25,
-
+    height: 27,
     borderTopWidth: 1,
-    borderTopColor: "#332C1D",
-
+    borderTopColor: "#342B1B",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
 
   potentialLabel: {
-    color: "#8A857D",
-    fontSize: 7.5,
+    color: "#81796D",
+    fontSize: 8,
+    letterSpacing: 0.5,
   },
 
   potentialValue: {
     color: "#DDB936",
-
-    fontSize: 9,
-    fontWeight: "bold",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 10,
+    letterSpacing: 1,
   },
-
-  /* FOOTER */
 
   footer: {
-    height: 46,
-
-    borderTopWidth: 1,
-    borderTopColor: "#211D16",
-
-    flexDirection: "row",
-    justifyContent: "center",
+    height: 48,
     alignItems: "center",
-
-    gap: 18,
-  },
-
-  footerHint: {
-    width: 150,
-
-    color: "#66615A",
-
-    fontSize: 8,
-    textAlign: "right",
+    justifyContent: "center",
   },
 
   confirmButton: {
-    width: 155,
-    height: 32,
-
-    backgroundColor: "#DDB936",
-
-    borderRadius: 5,
-
+    minWidth: 180,
+    height: 34,
+    paddingHorizontal: 22,
+    backgroundColor: "#D4AF37",
+    borderRadius: 3,
     alignItems: "center",
     justifyContent: "center",
   },
 
   disabledButton: {
-    backgroundColor: "#292929",
+    backgroundColor: "#29261F",
+    borderWidth: 1,
+    borderColor: "#3A352A",
   },
 
   confirmButtonText: {
     color: "#11100D",
-
-    fontSize: 9,
-    fontWeight: "bold",
-    letterSpacing: 0.7,
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 10,
+    letterSpacing: 1,
   },
 
   disabledText: {
-    color: "#666666",
+    color: "#69635A",
   },
 
-  errorText: {
+  errorTitle: {
     color: "#DDB936",
-    fontSize: 16,
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 15,
+    letterSpacing: 2,
     marginBottom: 18,
   },
 
   backText: {
-    color: "#B99B4D",
-    fontSize: 10,
-    fontWeight: "bold",
+    color: "#A98C47",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 9,
+    letterSpacing: 1,
   },
 });
