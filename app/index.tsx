@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { useEffect } from "react";
 import {
   ActivityIndicator,
+  ImageBackground,
   Pressable,
   StyleSheet,
   Text,
@@ -60,7 +61,11 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.background} />
+      <ImageBackground
+        source={require("../assets/images/menu/main-menu-bg.png")}
+        resizeMode="cover"
+        style={styles.background}
+      />
 
       <View style={styles.overlay} />
 
@@ -145,13 +150,21 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: "#17120B",
   },
 
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.25)",
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
   },
 
   content: {

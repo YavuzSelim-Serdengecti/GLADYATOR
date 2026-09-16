@@ -50,7 +50,6 @@ type MapLocationProps = {
 
 function MapLocation({
   title,
-  subtitle,
   feature,
   currentLevel,
   onPress,
@@ -64,31 +63,17 @@ function MapLocation({
     <Pressable
       disabled={locked || !onPress}
       onPress={onPress}
+      accessibilityLabel={title}
       style={({ pressed }) => [
         styles.location,
-        locked && styles.lockedLocation,
-        !onPress && !locked && styles.unavailableLocation,
-        pressed && !locked && onPress && styles.locationPressed,
         style,
+        pressed && !locked && onPress && styles.locationPressed,
       ]}>
-      <View style={styles.locationLabel}>
-        <Text
-          numberOfLines={1}
-          style={[styles.locationTitle, locked && styles.lockedText]}>
-          {locked ? "🔒 " : ""}
-          {title}
-        </Text>
-
-        {locked ? (
-          <Text style={styles.levelText}>LV. {requiredLevel}</Text>
-        ) : !onPress ? (
-          <Text style={styles.unavailableText}>YAKINDA</Text>
-        ) : subtitle ? (
-          <Text numberOfLines={1} style={styles.locationSubtitle}>
-            {subtitle}
-          </Text>
-        ) : null}
-      </View>
+      {locked && (
+        <View style={styles.lockIndicator}>
+          <Text style={styles.lockIndicatorText}>🔒 LV. {requiredLevel}</Text>
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -464,7 +449,7 @@ export default function MapScreen() {
 
       {/* REAL ROME MAP */}
       <ImageBackground
-        source={require("../assets/images/map/rome-map.png")}
+        source={require("../assets/images/map/rome-map.jpeg")}
         resizeMode="cover"
         style={styles.map}
         imageStyle={styles.mapImage}>
@@ -549,37 +534,30 @@ export default function MapScreen() {
 
         {/* MAP LOCATIONS */}
 
-        {/* Sol üst büyük eğitim kompleksi */}
         <MapLocation
           title="LUDUS"
-          subtitle="Hanedanını yönet"
           feature="ludus"
           currentLevel={ludus.level}
           onPress={() => router.push("/ludus")}
           style={styles.ludusLocation}
         />
 
-        {/* Üst orta büyük arena */}
         <MapLocation
           title="ARENA"
-          subtitle="Şöhret için savaş"
           feature="arena"
           currentLevel={ludus.level}
           onPress={() => router.push("/arena")}
           style={styles.arenaLocation}
         />
 
-        {/* Sağ orta pazar meydanı */}
         <MapLocation
           title="GLADYATÖR PAZARI"
-          subtitle="Yeni savaşçılar bul"
           feature="market"
           currentLevel={ludus.level}
           onPress={() => router.push("/market")}
           style={styles.marketLocation}
         />
 
-        {/* Sol orta dumanlı atölye */}
         <MapLocation
           title="DEMİRCİ"
           feature="blacksmith"
@@ -587,17 +565,14 @@ export default function MapScreen() {
           style={styles.blacksmithLocation}
         />
 
-        {/* Alt orta sol */}
         <MapLocation
           title="TAVERNA"
-          subtitle="Moral ve olaylar"
           feature="tavern"
           currentLevel={ludus.level}
           onPress={() => router.push("/tavern")}
           style={styles.tavernLocation}
         />
 
-        {/* Alt orta sağ */}
         <MapLocation
           title="REVİR"
           feature="infirmary"
@@ -605,7 +580,6 @@ export default function MapScreen() {
           style={styles.infirmaryLocation}
         />
 
-        {/* Sol alt kayalık alan */}
         <MapLocation
           title="MADEN"
           feature="mine"
@@ -613,10 +587,8 @@ export default function MapScreen() {
           style={styles.mineLocation}
         />
 
-        {/* Sağ alt gösterişli bina */}
         <MapLocation
           title="OYUN EVİ"
-          subtitle="Şans oyunları"
           feature="gambling_house"
           currentLevel={ludus.level}
           onPress={() => router.push("/gambling-house")}
@@ -840,7 +812,11 @@ const styles = StyleSheet.create({
   },
 
   mapShade: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: "rgba(6, 4, 2, 0.12)",
   },
 
@@ -933,73 +909,35 @@ const styles = StyleSheet.create({
     height: 72,
     zIndex: 10,
     alignItems: "center",
-    justifyContent: "flex-end",
-    paddingBottom: 3,
-  },
-
-  locationLabel: {
-    minWidth: 92,
-    maxWidth: 130,
-    minHeight: 31,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: "rgba(12, 9, 5, 0.86)",
-    borderWidth: 1,
-    borderColor: "rgba(184, 145, 58, 0.8)",
-    borderRadius: 3,
-    alignItems: "center",
     justifyContent: "center",
   },
 
   locationPressed: {
-    transform: [{ scale: 0.96 }],
+    backgroundColor: "rgba(212, 175, 55, 0.10)",
+    borderRadius: 10,
+    transform: [{ scale: 0.97 }],
   },
 
-  lockedLocation: {
-    opacity: 0.7,
+  lockIndicator: {
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    backgroundColor: "rgba(10, 8, 5, 0.76)",
+    borderWidth: 1,
+    borderColor: "rgba(212, 175, 55, 0.55)",
+    borderRadius: 5,
   },
 
-  unavailableLocation: {
-    opacity: 0.72,
-  },
-
-  locationTitle: {
-    color: "#F0D77D",
-    fontFamily: "Cinzel_700Bold",
-    fontSize: 8.5,
-    letterSpacing: 0.4,
-    textAlign: "center",
-  },
-
-  locationSubtitle: {
-    color: "#C3B79A",
-    fontSize: 7,
-    marginTop: 2,
-    textAlign: "center",
-  },
-
-  unavailableText: {
-    color: "#8C8578",
+  lockIndicatorText: {
+    color: "#C8B16A",
     fontFamily: "Cinzel_600SemiBold",
-    fontSize: 7,
-    marginTop: 2,
-  },
-
-  lockedText: {
-    color: "#918B81",
-  },
-
-  levelText: {
-    color: "#9B9489",
-    fontFamily: "Cinzel_600SemiBold",
-    fontSize: 7,
-    marginTop: 2,
+    fontSize: 7.5,
+    letterSpacing: 0.3,
   },
 
   /*
-   * Haritadaki gerçek yapıların üzerine yerleştirildi.
-   * Görselin cihazdaki kırpılmasına göre birkaç yüzde puan
-   * ince ayar gerekebilir.
+   * Şimdilik eski koordinatlar korunuyor.
+   * Sonraki adımda ekran görüntüsüne göre
+   * görseldeki gerçek bölgelerin üzerine oturtacağız.
    */
 
   ludusLocation: {
