@@ -46,6 +46,7 @@ type MapLocationProps = {
   currentLevel: number;
   onPress?: () => void;
   style?: object;
+  lockStyle?: object;
 };
 
 function MapLocation({
@@ -54,6 +55,7 @@ function MapLocation({
   currentLevel,
   onPress,
   style,
+  lockStyle,
 }: MapLocationProps) {
   const requiredLevel = getFeatureRequiredLevel(feature);
   const featureUnlocked = isFeatureUnlocked(feature, currentLevel);
@@ -70,7 +72,7 @@ function MapLocation({
         pressed && !locked && onPress && styles.locationPressed,
       ]}>
       {locked && (
-        <View style={styles.lockIndicator}>
+        <View style={[styles.lockIndicator, lockStyle]}>
           <Text style={styles.lockIndicatorText}>🔒 LV. {requiredLevel}</Text>
         </View>
       )}
@@ -84,6 +86,7 @@ export default function MapScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
+  const [mapMenuOpen, setMapMenuOpen] = useState(false);
 
   const [goToFinancialStatusAfterModal, setGoToFinancialStatusAfterModal] =
     useState(false);
@@ -455,81 +458,105 @@ export default function MapScreen() {
         imageStyle={styles.mapImage}>
         <View style={styles.mapShade} />
 
-        <View
-          pointerEvents="none"
-          style={[
-            styles.mapHeader,
-            {
-              left: safeLeft,
-            },
-          ]}>
-          <Text style={styles.mapEyebrow}>ROMA</Text>
-          <Text style={styles.mapTitle}>ŞEHİR HARİTASI</Text>
-        </View>
-
-        {/* TOP ACTIONS */}
+        {/* MAP MENU */}
         <View
           style={[
-            styles.mapActions,
+            styles.mapMenuContainer,
             {
               right: safeRight,
             },
           ]}>
           <Pressable
-            style={styles.topAction}
-            onPress={() => router.push("/rewarded-ads")}>
-            <Text style={styles.topActionText}>ÖDÜLLER</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.topAction}
-            onPress={() => router.push("/achievements")}>
-            <Text style={styles.topActionText}>BAŞARIMLAR</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.topAction}
-            onPress={() => router.push("/regions")}>
-            <Text style={styles.topActionText}>BÖLGELER</Text>
-          </Pressable>
-
-          <Pressable
             style={[
-              styles.topAction,
-              dailyRewardAvailable && styles.activeTopAction,
-              !TEST_MODE && !dailyRewardUnlocked && styles.lockedTopButton,
+              styles.mapMenuToggle,
+              mapMenuOpen && styles.mapMenuToggleActive,
             ]}
-            onPress={handleDailyReward}>
-            <Text
-              style={[
-                styles.topActionText,
-                dailyRewardAvailable && styles.activeTopActionText,
-                !TEST_MODE && !dailyRewardUnlocked && styles.lockedTopText,
-              ]}>
-              {!TEST_MODE && !dailyRewardUnlocked ? "🔒 " : ""}
-              GÜNLÜK ÇARK
-            </Text>
-
-            {dailyRewardAvailable && (TEST_MODE || dailyRewardUnlocked) && (
-              <View style={styles.rewardDot} />
-            )}
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.topAction,
-              !TEST_MODE && !rivalsUnlocked && styles.lockedTopButton,
-            ]}
-            onPress={handleRivals}>
-            <Text
-              style={[
-                styles.topActionText,
-                !TEST_MODE && !rivalsUnlocked && styles.lockedTopText,
-              ]}>
-              {!TEST_MODE && !rivalsUnlocked ? "🔒 " : ""}
-              RAKİPLER
+            onPress={() => setMapMenuOpen((open) => !open)}>
+            <Text style={styles.mapMenuToggleText}>
+              {mapMenuOpen ? "KAPAT" : "MENÜ"}
             </Text>
           </Pressable>
+
+          {mapMenuOpen && (
+            <View style={styles.mapMenuPanel}>
+              <Pressable
+                style={styles.mapMenuItem}
+                onPress={() => {
+                  setMapMenuOpen(false);
+                  router.push("/rewarded-ads");
+                }}>
+                <Text style={styles.mapMenuItemText}>ÖDÜLLER</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.mapMenuItem}
+                onPress={() => {
+                  setMapMenuOpen(false);
+                  router.push("/achievements");
+                }}>
+                <Text style={styles.mapMenuItemText}>BAŞARIMLAR</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.mapMenuItem}
+                onPress={() => {
+                  setMapMenuOpen(false);
+                  router.push("/regions");
+                }}>
+                <Text style={styles.mapMenuItemText}>BÖLGELER</Text>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.mapMenuItem,
+                  dailyRewardAvailable && styles.activeMapMenuItem,
+                  !TEST_MODE &&
+                    !dailyRewardUnlocked &&
+                    styles.lockedMapMenuItem,
+                ]}
+                onPress={() => {
+                  setMapMenuOpen(false);
+                  handleDailyReward();
+                }}>
+                <Text
+                  style={[
+                    styles.mapMenuItemText,
+                    dailyRewardAvailable && styles.activeMapMenuItemText,
+                    !TEST_MODE &&
+                      !dailyRewardUnlocked &&
+                      styles.lockedMapMenuItemText,
+                  ]}>
+                  {!TEST_MODE && !dailyRewardUnlocked ? "🔒 " : ""}
+                  GÜNLÜK ÇARK
+                </Text>
+
+                {dailyRewardAvailable && (TEST_MODE || dailyRewardUnlocked) && (
+                  <View style={styles.rewardDot} />
+                )}
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.mapMenuItem,
+                  !TEST_MODE && !rivalsUnlocked && styles.lockedMapMenuItem,
+                ]}
+                onPress={() => {
+                  setMapMenuOpen(false);
+                  handleRivals();
+                }}>
+                <Text
+                  style={[
+                    styles.mapMenuItemText,
+                    !TEST_MODE &&
+                      !rivalsUnlocked &&
+                      styles.lockedMapMenuItemText,
+                  ]}>
+                  {!TEST_MODE && !rivalsUnlocked ? "🔒 " : ""}
+                  RAKİPLER
+                </Text>
+              </Pressable>
+            </View>
+          )}
         </View>
 
         {/* MAP LOCATIONS */}
@@ -563,6 +590,7 @@ export default function MapScreen() {
           feature="blacksmith"
           currentLevel={ludus.level}
           style={styles.blacksmithLocation}
+          lockStyle={styles.managementLock}
         />
 
         <MapLocation
@@ -571,6 +599,7 @@ export default function MapScreen() {
           currentLevel={ludus.level}
           onPress={() => router.push("/tavern")}
           style={styles.tavernLocation}
+          lockStyle={styles.tavernLock}
         />
 
         <MapLocation
@@ -578,6 +607,7 @@ export default function MapScreen() {
           feature="infirmary"
           currentLevel={ludus.level}
           style={styles.infirmaryLocation}
+          lockStyle={styles.infirmaryLock}
         />
 
         <MapLocation
@@ -585,6 +615,7 @@ export default function MapScreen() {
           feature="mine"
           currentLevel={ludus.level}
           style={styles.mineLocation}
+          lockStyle={styles.mineLock}
         />
 
         <MapLocation
@@ -593,6 +624,7 @@ export default function MapScreen() {
           currentLevel={ludus.level}
           onPress={() => router.push("/gambling-house")}
           style={styles.gamblingLocation}
+          lockStyle={styles.gamblingLock}
         />
       </ImageBackground>
 
@@ -649,7 +681,7 @@ const styles = StyleSheet.create({
   },
 
   topBar: {
-    height: 64,
+    height: 48,
     backgroundColor: "#100D08",
     borderBottomWidth: 1,
     borderBottomColor: "#332A1A",
@@ -658,14 +690,14 @@ const styles = StyleSheet.create({
   },
 
   identity: {
-    width: 165,
-    paddingRight: 14,
+    width: 140,
+    paddingRight: 10,
   },
 
   ludusName: {
     color: "#DDB936",
     fontFamily: "Cinzel_700Bold",
-    fontSize: 14,
+    fontSize: 12,
     letterSpacing: 0.7,
   },
 
@@ -676,15 +708,15 @@ const styles = StyleSheet.create({
   },
 
   levelSection: {
-    width: 185,
-    marginRight: 20,
+    width: 165,
+    marginRight: 14,
   },
 
   levelTopRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 5,
+    marginBottom: 3,
   },
 
   levelLabel: {
@@ -702,7 +734,7 @@ const styles = StyleSheet.create({
 
   levelBarBackground: {
     width: "100%",
-    height: 6,
+    height: 5,
     backgroundColor: "#2B261C",
     borderWidth: 1,
     borderColor: "#4B4028",
@@ -721,7 +753,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
-    gap: 11,
+    gap: 8,
   },
 
   resource: {
@@ -741,7 +773,7 @@ const styles = StyleSheet.create({
   },
 
   financialBadge: {
-    height: 25,
+    height: 22,
     paddingHorizontal: 8,
     borderWidth: 1,
     borderRadius: 3,
@@ -781,8 +813,8 @@ const styles = StyleSheet.create({
   },
 
   endDayButton: {
-    height: 31,
-    paddingHorizontal: 12,
+    height: 27,
+    paddingHorizontal: 11,
     backgroundColor: "#DDB936",
     borderRadius: 3,
     alignItems: "center",
@@ -820,76 +852,81 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(6, 4, 2, 0.12)",
   },
 
-  mapHeader: {
+  mapMenuContainer: {
     position: "absolute",
-    top: 12,
-    zIndex: 20,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 3,
-    backgroundColor: "rgba(13, 10, 6, 0.72)",
+    top: 7,
+    zIndex: 40,
+    alignItems: "flex-end",
+  },
+
+  mapMenuToggle: {
+    height: 25,
+    minWidth: 62,
+    paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: "rgba(132, 105, 48, 0.45)",
+    borderColor: "#806A34",
+    borderRadius: 3,
+    backgroundColor: "rgba(13, 10, 6, 0.88)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  mapEyebrow: {
-    color: "#B99B4D",
-    fontFamily: "Cinzel_600SemiBold",
-    fontSize: 8,
-    letterSpacing: 2.5,
+  mapMenuToggleActive: {
+    borderColor: "#DDB936",
+    backgroundColor: "rgba(38, 30, 12, 0.94)",
   },
 
-  mapTitle: {
-    color: "#E1C66E",
+  mapMenuToggleText: {
+    color: "#D8BA62",
     fontFamily: "Cinzel_700Bold",
-    fontSize: 14,
-    letterSpacing: 1.5,
-    marginTop: 1,
+    fontSize: 7,
+    letterSpacing: 0.7,
   },
 
-  mapActions: {
-    position: "absolute",
-    top: 12,
-    zIndex: 30,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-
-  topAction: {
-    height: 29,
-    paddingHorizontal: 9,
+  mapMenuPanel: {
+    width: 118,
+    marginTop: 4,
+    padding: 4,
     borderWidth: 1,
-    borderColor: "#75602F",
-    borderRadius: 3,
-    backgroundColor: "rgba(13, 10, 6, 0.82)",
-    alignItems: "center",
+    borderColor: "rgba(117, 96, 47, 0.75)",
+    borderRadius: 4,
+    backgroundColor: "rgba(10, 8, 5, 0.94)",
+    gap: 3,
+  },
+
+  mapMenuItem: {
+    height: 25,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: "rgba(117, 96, 47, 0.55)",
+    borderRadius: 2,
+    backgroundColor: "rgba(22, 17, 10, 0.82)",
     justifyContent: "center",
     position: "relative",
   },
 
-  topActionText: {
+  mapMenuItemText: {
     color: "#C6A653",
     fontFamily: "Cinzel_600SemiBold",
-    fontSize: 7.5,
-    letterSpacing: 0.3,
+    fontSize: 6.5,
+    letterSpacing: 0.25,
   },
 
-  activeTopAction: {
+  activeMapMenuItem: {
     borderColor: "#DDB936",
-    backgroundColor: "rgba(38, 30, 12, 0.9)",
+    backgroundColor: "rgba(38, 30, 12, 0.95)",
   },
 
-  activeTopActionText: {
+  activeMapMenuItemText: {
     color: "#F1D46F",
   },
 
-  lockedTopButton: {
-    opacity: 0.55,
+  lockedMapMenuItem: {
+    opacity: 0.58,
     borderColor: "#4B463D",
   },
 
-  lockedTopText: {
+  lockedMapMenuItemText: {
     color: "#777168",
   },
 
@@ -899,8 +936,8 @@ const styles = StyleSheet.create({
     height: 7,
     borderRadius: 4,
     backgroundColor: "#8FAF72",
-    right: -3,
-    top: -3,
+    right: 5,
+    top: 9,
   },
 
   location: {
@@ -919,64 +956,81 @@ const styles = StyleSheet.create({
   },
 
   lockIndicator: {
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    backgroundColor: "rgba(10, 8, 5, 0.76)",
+    position: "absolute",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    backgroundColor: "rgba(10, 8, 5, 0.82)",
     borderWidth: 1,
-    borderColor: "rgba(212, 175, 55, 0.55)",
-    borderRadius: 5,
+    borderColor: "rgba(212, 175, 55, 0.65)",
+    borderRadius: 4,
   },
 
   lockIndicatorText: {
-    color: "#C8B16A",
+    color: "#D4BC70",
     fontFamily: "Cinzel_600SemiBold",
-    fontSize: 7.5,
-    letterSpacing: 0.3,
+    fontSize: 6,
+    letterSpacing: 0.15,
   },
 
-  /*
-   * Şimdilik eski koordinatlar korunuyor.
-   * Sonraki adımda ekran görüntüsüne göre
-   * görseldeki gerçek bölgelerin üzerine oturtacağız.
-   */
+  mineLock: {
+    top: -5,
+  },
+
+  tavernLock: {
+    top: 5,
+    right: -2,
+  },
+
+  managementLock: {
+    top: 7,
+    right: -4,
+  },
+
+  infirmaryLock: {
+    top: -3,
+  },
+
+  gamblingLock: {
+    top: -4,
+  },
 
   ludusLocation: {
-    left: "15%",
-    top: "18%",
+    left: "20%",
+    top: "15%",
   },
 
   arenaLocation: {
-    left: "51%",
-    top: "13%",
+    left: "47%",
+    top: "4%",
   },
 
   marketLocation: {
-    right: "8%",
-    top: "34%",
+    left: "14%",
+    top: "43%",
   },
 
   blacksmithLocation: {
-    left: "19%",
-    top: "47%",
+    left: "59%",
+    top: "38%",
   },
 
   tavernLocation: {
-    left: "39%",
-    bottom: "9%",
+    left: "37%",
+    top: "48%",
   },
 
   infirmaryLocation: {
-    left: "59%",
-    bottom: "9%",
+    left: "51%",
+    bottom: "1%",
   },
 
   mineLocation: {
-    left: "3%",
-    bottom: "5%",
+    right: "13%",
+    top: "12%",
   },
 
   gamblingLocation: {
-    right: "6%",
-    bottom: "5%",
+    right: "8%",
+    top: "48%",
   },
 });
