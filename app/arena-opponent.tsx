@@ -23,9 +23,9 @@ import {
   getEndgameScaling,
 } from "../src/features/endgame/endgameScaling";
 
+import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { getDynastyRank } from "../src/features/ludus/ludusLevel";
 import { useGameStore } from "../src/store/gameStore";
-
 const ARENA_ACTION_COST = 2;
 
 export default function ArenaOpponentScreen() {
@@ -379,9 +379,7 @@ function FighterCard({
         <Text style={styles.fighterClass}>{fighter.class.toUpperCase()}</Text>
       </View>
 
-      <View style={styles.portrait}>
-        <Text style={styles.portraitIcon}>{player ? "⚔" : "🛡"}</Text>
-      </View>
+      <GladiatorPortrait style={styles.portrait} />
 
       <Text style={styles.name} numberOfLines={1}>
         {fighter.name.toUpperCase()}
@@ -446,7 +444,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 
@@ -648,7 +646,7 @@ const styles = StyleSheet.create({
 
   fighterCard: {
     width: 220,
-    height: 238,
+    height: 270,
     backgroundColor: "#17130D",
     borderWidth: 1,
     borderColor: "#453A25",
@@ -688,19 +686,12 @@ const styles = StyleSheet.create({
   },
 
   portrait: {
-    height: 38,
+    height: 70,
     backgroundColor: "#211D16",
     borderWidth: 1,
     borderColor: "#30291C",
     borderRadius: 3,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 3,
-  },
-
-  portraitIcon: {
-    color: "#B99B4D",
-    fontSize: 18,
   },
 
   name: {

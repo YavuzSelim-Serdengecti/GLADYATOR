@@ -15,9 +15,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { generateGladiator } from "../src/features/gladiators/generateGladiator";
 import { useGameStore } from "../src/store/gameStore";
-
 export default function StarterGladiatorScreen() {
   const insets = useSafeAreaInsets();
 
@@ -152,6 +152,8 @@ export default function StarterGladiatorScreen() {
                   selected && styles.selectedCard,
                 ]}>
                 <View style={styles.portrait}>
+                  <GladiatorPortrait style={styles.portraitImage} />
+
                   <Text style={styles.roleLabel}>{roleLabel}</Text>
 
                   {selected && (
@@ -159,8 +161,6 @@ export default function StarterGladiatorScreen() {
                       <Text style={styles.selectedBadgeText}>SEÇİLDİ</Text>
                     </View>
                   )}
-
-                  <Text style={styles.portraitIcon}>⚔</Text>
                 </View>
 
                 <View style={styles.identity}>
@@ -250,12 +250,12 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#17120B",
   },
 
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0, 0, 0, 0.28)",
   },
 
@@ -338,6 +338,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    overflow: "hidden",
+  },
+
+  portraitImage: {
+    width: "100%",
+    height: "100%",
   },
 
   roleLabel: {
@@ -348,11 +354,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cinzel_600SemiBold",
     fontSize: 8,
     letterSpacing: 1.1,
-  },
-
-  portraitIcon: {
-    color: "#C9A64C",
-    fontSize: 26,
   },
 
   selectedBadge: {

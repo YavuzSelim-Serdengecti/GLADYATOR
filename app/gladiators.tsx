@@ -6,6 +6,7 @@ import {
 import { router } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,6 +17,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useGameStore } from "../src/store/gameStore";
+
+const TEST_GLADIATOR_PORTRAIT = require("../assets/images/faces/face_1_olive.png");
 
 export default function GladiatorsScreen() {
   const insets = useSafeAreaInsets();
@@ -89,14 +92,12 @@ export default function GladiatorsScreen() {
         ]}>
         <View style={styles.identity}>
           <Text style={styles.eyebrow}>LUDUS YÖNETİMİ</Text>
-
           <Text style={styles.topTitle}>GLADYATÖRLER</Text>
         </View>
 
         <View style={styles.contextArea}>
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>TOPLAM</Text>
-
             <Text style={styles.contextValue}>{playerGladiators.length}</Text>
           </View>
 
@@ -104,7 +105,6 @@ export default function GladiatorsScreen() {
 
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>HAZIR</Text>
-
             <Text style={styles.contextValue}>{activeCount}</Text>
           </View>
 
@@ -112,7 +112,6 @@ export default function GladiatorsScreen() {
 
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>YARALI</Text>
-
             <Text style={styles.contextValue}>{injuredCount}</Text>
           </View>
         </View>
@@ -219,17 +218,17 @@ export default function GladiatorsScreen() {
                         styles.portrait,
                         gladiator.status === "dead" && styles.deadPortrait,
                       ]}>
-                      <Text style={styles.portraitIcon}>
-                        {gladiator.status === "dead"
-                          ? "☠"
-                          : gladiator.status === "injured"
-                            ? "✚"
-                            : "⚔"}
-                      </Text>
+                      <Image
+                        source={TEST_GLADIATOR_PORTRAIT}
+                        style={styles.portraitImage}
+                        resizeMode="cover"
+                      />
 
-                      <Text style={styles.portraitText}>
-                        {gladiator.status === "dead" ? "DÜŞTÜ" : "GLADYATÖR"}
-                      </Text>
+                      {gladiator.status === "dead" && (
+                        <View style={styles.deadPortraitOverlay}>
+                          <Text style={styles.deadPortraitIcon}>☠</Text>
+                        </View>
+                      )}
                     </View>
 
                     <View style={styles.middle}>
@@ -375,7 +374,6 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <View style={styles.statRow}>
       <Text style={styles.statLabel}>{label}</Text>
-
       <Text style={styles.statValue}>{value}</Text>
     </View>
   );
@@ -447,7 +445,11 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: "#15110C",
   },
 
@@ -611,25 +613,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#30291D",
     borderRadius: 4,
-    alignItems: "center",
-    justifyContent: "center",
+    overflow: "hidden",
+    position: "relative",
+  },
+
+  portraitImage: {
+    width: "100%",
+    height: "100%",
   },
 
   deadPortrait: {
     backgroundColor: "#171313",
   },
 
-  portraitIcon: {
-    color: "#9C8244",
-    fontSize: 28,
+  deadPortraitOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  portraitText: {
-    color: "#776B54",
-    fontFamily: "Cinzel_600SemiBold",
-    fontSize: 7,
-    letterSpacing: 0.8,
-    marginTop: 4,
+  deadPortraitIcon: {
+    color: "#A65E54",
+    fontSize: 30,
   },
 
   middle: {

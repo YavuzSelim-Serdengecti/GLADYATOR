@@ -314,7 +314,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <AnimatedImageBackground
-        source={require("../assets/images/menu/main-menu-bg.png")}
+        source={require("../assets/images/menu/main-menu-bg.jpg")}
         resizeMode="cover"
         style={[
           styles.background,

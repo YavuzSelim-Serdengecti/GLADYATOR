@@ -10,11 +10,11 @@ import {
 } from "react-native";
 
 import GameModal from "../src/components/GameModal";
+import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { generateGladiatorPool } from "../src/features/gladiators/generateGladiatorPool";
 import { createAuction } from "../src/features/market/createAuction";
 import { useGameStore } from "../src/store/gameStore";
 import { Auction } from "../src/types/game";
-
 const MARKET_ACTION_COST = 1;
 const MARKET_REFRESH_COST = 1;
 const MARKET_GLADIATOR_COUNT = 5;
@@ -391,9 +391,7 @@ export default function MarketScreen() {
                   height: cardHeight,
                 },
               ]}>
-              <View style={styles.portrait}>
-                <Text style={styles.portraitIcon}>⚔️</Text>
-              </View>
+              <GladiatorPortrait style={styles.portrait} />
 
               <View style={styles.identity}>
                 <Text style={styles.name} numberOfLines={1}>
@@ -655,11 +653,9 @@ const styles = StyleSheet.create({
   },
 
   portrait: {
-    height: 35,
+    height: 60,
     backgroundColor: "#211D16",
     borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
   },
 
   portraitIcon: {

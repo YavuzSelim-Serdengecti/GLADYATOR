@@ -31,9 +31,9 @@ import {
 
 import { applyEquipmentBonuses } from "../src/features/equipment/getEquipmentBonuses";
 
+import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { useGameStore } from "../src/store/gameStore";
 import { randomInt } from "../src/utils/random";
-
 type BattleTurn = "player" | "enemy";
 
 export default function ArenaBattleScreen() {
@@ -386,9 +386,7 @@ export default function ArenaBattleScreen() {
               </Text>
             </View>
 
-            <View style={styles.portrait}>
-              <Text style={styles.portraitIcon}>⚔</Text>
-            </View>
+            <GladiatorPortrait style={styles.portrait} />
 
             <Text style={styles.name} numberOfLines={1}>
               {player.gladiator.name.toUpperCase()}
@@ -549,9 +547,7 @@ export default function ArenaBattleScreen() {
               </Text>
             </View>
 
-            <View style={styles.portrait}>
-              <Text style={styles.portraitIcon}>🛡</Text>
-            </View>
+            <GladiatorPortrait style={styles.portrait} />
 
             <Text style={styles.name} numberOfLines={1}>
               {enemy.gladiator.name.toUpperCase()}
@@ -644,7 +640,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 
@@ -842,19 +838,12 @@ const styles = StyleSheet.create({
   },
 
   portrait: {
-    height: 31,
+    height: 55,
     marginTop: 5,
     backgroundColor: "#211D16",
     borderWidth: 1,
     borderColor: "#30291C",
     borderRadius: 3,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  portraitIcon: {
-    color: "#B99B4D",
-    fontSize: 16,
   },
 
   name: {

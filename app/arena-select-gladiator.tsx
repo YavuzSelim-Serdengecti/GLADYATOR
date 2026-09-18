@@ -14,9 +14,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { arenas } from "../src/data/arenas";
 import { useGameStore } from "../src/store/gameStore";
-
 export default function ArenaSelectGladiatorScreen() {
   const { arenaId } = useLocalSearchParams<{
     arenaId: string;
@@ -179,9 +179,7 @@ export default function ArenaSelectGladiatorScreen() {
 
             return (
               <View key={gladiator.id} style={styles.card}>
-                <View style={styles.portrait}>
-                  <Text style={styles.portraitIcon}>⚔</Text>
-                </View>
+                <GladiatorPortrait style={styles.portrait} />
 
                 <View style={styles.identityArea}>
                   <Text style={styles.cardEyebrow}>
@@ -282,7 +280,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 
@@ -481,18 +479,11 @@ const styles = StyleSheet.create({
   },
 
   portrait: {
-    height: 42,
+    height: 60,
     backgroundColor: "#211D16",
     borderWidth: 1,
     borderColor: "#30291C",
     borderRadius: 3,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  portraitIcon: {
-    color: "#B99B4D",
-    fontSize: 19,
   },
 
   identityArea: {
