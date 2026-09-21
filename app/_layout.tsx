@@ -5,7 +5,25 @@ import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const APP_IMAGES = [
-  require("../assets/images/faces/face_1_olive.png"),
+  // Gladyatör portreleri
+  require("../assets/images/faces/face_01.png"),
+  require("../assets/images/faces/face_02.png"),
+  require("../assets/images/faces/face_03.png"),
+  require("../assets/images/faces/face_04.png"),
+  require("../assets/images/faces/face_05.png"),
+  require("../assets/images/faces/face_06.png"),
+  require("../assets/images/faces/face_07.png"),
+  require("../assets/images/faces/face_08.png"),
+  require("../assets/images/faces/face_09.png"),
+  require("../assets/images/faces/face_10.png"),
+  require("../assets/images/faces/face_11.png"),
+  require("../assets/images/faces/face_12.png"),
+  require("../assets/images/faces/face_13.png"),
+  require("../assets/images/faces/face_14.png"),
+  require("../assets/images/faces/face_15.png"),
+  require("../assets/images/faces/face_16.png"),
+
+  // Diğer oyun görselleri
   require("../assets/images/menu/main-menu-bg.jpg"),
   require("../assets/images/map/rome-map.jpeg"),
 ];

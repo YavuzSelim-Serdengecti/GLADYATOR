@@ -379,7 +379,7 @@ function FighterCard({
         <Text style={styles.fighterClass}>{fighter.class.toUpperCase()}</Text>
       </View>
 
-      <GladiatorPortrait style={styles.portrait} />
+      <GladiatorPortrait style={styles.portrait} variant={enemy ? 2 : 1} />
 
       <Text style={styles.name} numberOfLines={1}>
         {fighter.name.toUpperCase()}

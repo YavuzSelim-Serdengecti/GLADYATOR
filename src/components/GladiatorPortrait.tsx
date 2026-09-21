@@ -3,17 +3,26 @@ import { Image, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 type GladiatorPortraitProps = {
   style?: StyleProp<ViewStyle>;
   dead?: boolean;
+  variant?: 1 | 2;
 };
 
-const TEST_PORTRAIT = require("../../assets/images/faces/face_1_olive.png");
+const PORTRAITS = {
+  1: require("../../assets/images/faces/face_1_olive.png"),
+  2: require("../../assets/images/faces/face_2_light.png"),
+};
 
 export default function GladiatorPortrait({
   style,
   dead = false,
+  variant = 1,
 }: GladiatorPortraitProps) {
   return (
     <View style={[styles.container, style]}>
-      <Image source={TEST_PORTRAIT} style={styles.image} resizeMode="contain" />
+      <Image
+        source={PORTRAITS[variant]}
+        style={styles.image}
+        resizeMode="contain"
+      />
 
       {dead && <View style={styles.deadOverlay} />}
     </View>
