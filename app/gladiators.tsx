@@ -6,7 +6,6 @@ import {
 import { router } from "expo-router";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useGameStore } from "../src/store/gameStore";
 
-const TEST_GLADIATOR_PORTRAIT = require("../assets/images/faces/face_1_olive.png");
+import GladiatorPortrait from "../src/components/GladiatorPortrait";
 
 export default function GladiatorsScreen() {
   const insets = useSafeAreaInsets();
@@ -213,23 +212,11 @@ export default function GladiatorsScreen() {
                         height: cardHeight,
                       },
                     ]}>
-                    <View
-                      style={[
-                        styles.portrait,
-                        gladiator.status === "dead" && styles.deadPortrait,
-                      ]}>
-                      <Image
-                        source={TEST_GLADIATOR_PORTRAIT}
-                        style={styles.portraitImage}
-                        resizeMode="cover"
-                      />
-
-                      {gladiator.status === "dead" && (
-                        <View style={styles.deadPortraitOverlay}>
-                          <Text style={styles.deadPortraitIcon}>☠</Text>
-                        </View>
-                      )}
-                    </View>
+                    <GladiatorPortrait
+                      gladiatorId={gladiator.id}
+                      dead={gladiator.status === "dead"}
+                      style={styles.portrait}
+                    />
 
                     <View style={styles.middle}>
                       <View style={styles.nameRow}>

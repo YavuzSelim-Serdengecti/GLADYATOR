@@ -1,25 +1,70 @@
-import { Image, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import {
+  Image,
+  ImageSourcePropType,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from "react-native";
 
 type GladiatorPortraitProps = {
   style?: StyleProp<ViewStyle>;
   dead?: boolean;
-  variant?: 1 | 2;
+  gladiatorId?: string | number;
+  variant?: number;
 };
 
-const PORTRAITS = {
-  1: require("../../assets/images/faces/face_1_olive.png"),
-  2: require("../../assets/images/faces/face_2_light.png"),
-};
+const PORTRAITS: ImageSourcePropType[] = [
+  require("../../assets/images/faces/face_01.png"),
+  require("../../assets/images/faces/face_02.png"),
+  require("../../assets/images/faces/face_03.png"),
+  require("../../assets/images/faces/face_04.png"),
+  require("../../assets/images/faces/face_05.png"),
+  require("../../assets/images/faces/face_06.png"),
+  require("../../assets/images/faces/face_07.png"),
+  require("../../assets/images/faces/face_08.png"),
+  require("../../assets/images/faces/face_09.png"),
+  require("../../assets/images/faces/face_10.png"),
+  require("../../assets/images/faces/face_11.png"),
+  require("../../assets/images/faces/face_12.png"),
+  require("../../assets/images/faces/face_13.png"),
+  require("../../assets/images/faces/face_14.png"),
+  require("../../assets/images/faces/face_15.png"),
+  require("../../assets/images/faces/face_16.png"),
+];
+
+function getPortraitIndex(gladiatorId?: string | number, variant?: number) {
+  if (variant !== undefined) {
+    return Math.abs(variant - 1) % PORTRAITS.length;
+  }
+
+  if (gladiatorId === undefined) {
+    return 0;
+  }
+
+  const value = String(gladiatorId);
+
+  let hash = 0;
+
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+
+  return hash % PORTRAITS.length;
+}
 
 export default function GladiatorPortrait({
   style,
   dead = false,
-  variant = 1,
+  gladiatorId,
+  variant,
 }: GladiatorPortraitProps) {
+  const portraitIndex = getPortraitIndex(gladiatorId, variant);
+
   return (
     <View style={[styles.container, style]}>
       <Image
-        source={PORTRAITS[variant]}
+        source={PORTRAITS[portraitIndex]}
         style={styles.image}
         resizeMode="contain"
       />
