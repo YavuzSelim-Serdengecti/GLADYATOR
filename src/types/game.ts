@@ -21,6 +21,7 @@ export type GladiatorRarity = "common" | "uncommon" | "rare" | "legendary";
 export type ArenaDifficulty = "easy" | "normal" | "hard" | "elite";
 export type MatchResult = "player_win" | "enemy_win";
 export type GladiatorSkinTone = "light" | "olive" | "tan" | "brown" | "dark";
+
 export type GladiatorFaceType =
   | "face_1"
   | "face_2"
@@ -28,6 +29,7 @@ export type GladiatorFaceType =
   | "face_4"
   | "face_5"
   | "face_6";
+
 export type GladiatorHairStyle =
   | "bald"
   | "short"
@@ -35,6 +37,7 @@ export type GladiatorHairStyle =
   | "long"
   | "curly"
   | "shaved";
+
 export type GladiatorHairColor =
   | "black"
   | "dark_brown"
@@ -43,6 +46,7 @@ export type GladiatorHairColor =
   | "blond"
   | "red"
   | "gray";
+
 export type GladiatorBeardStyle =
   | "none"
   | "stubble"
@@ -50,6 +54,7 @@ export type GladiatorBeardStyle =
   | "full"
   | "long"
   | "goatee";
+
 export type GladiatorScar =
   | "none"
   | "left_eye"
@@ -93,6 +98,9 @@ export interface Ludus {
 
 export interface Gladiator {
   id: string;
+
+  portraitId: number;
+
   worldId: string;
   ludusId: string;
   name: string;
@@ -273,7 +281,7 @@ export interface TwentyOneGameState {
   active: boolean;
   playerScore: number;
   houseScore: number;
-  bet: number;
+  bet: 100;
   finished: boolean;
   result: "win" | "lose" | "draw" | null;
 }

@@ -16,11 +16,21 @@ export function generateGladiatorPool({
     return [];
   }
 
-  return Array.from({ length: count }, () =>
+  const portraitIds = Array.from({ length: 16 }, (_, index) => index + 1);
+
+  // Portreleri karıştır
+  for (let i = portraitIds.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [portraitIds[i], portraitIds[j]] = [portraitIds[j], portraitIds[i]];
+  }
+
+  return Array.from({ length: count }, (_, index) =>
     generateGladiator({
       worldId,
       ludusId,
       profile: "random",
+      portraitId: portraitIds[index % portraitIds.length],
     }),
   );
 }

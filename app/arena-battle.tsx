@@ -386,7 +386,10 @@ export default function ArenaBattleScreen() {
               </Text>
             </View>
 
-            <GladiatorPortrait style={styles.portrait} />
+            <GladiatorPortrait
+              style={styles.portrait}
+              portraitId={player.gladiator.portraitId}
+            />
 
             <Text style={styles.name} numberOfLines={1}>
               {player.gladiator.name.toUpperCase()}
@@ -547,7 +550,10 @@ export default function ArenaBattleScreen() {
               </Text>
             </View>
 
-            <GladiatorPortrait style={styles.portrait} />
+            <GladiatorPortrait
+              style={styles.portrait}
+              portraitId={enemy.gladiator.portraitId}
+            />
 
             <Text style={styles.name} numberOfLines={1}>
               {enemy.gladiator.name.toUpperCase()}

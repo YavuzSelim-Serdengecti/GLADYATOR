@@ -213,7 +213,7 @@ export default function GladiatorsScreen() {
                       },
                     ]}>
                     <GladiatorPortrait
-                      gladiatorId={gladiator.id}
+                      portraitId={gladiator.portraitId}
                       dead={gladiator.status === "dead"}
                       style={styles.portrait}
                     />

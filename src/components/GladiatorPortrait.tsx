@@ -11,6 +11,7 @@ type GladiatorPortraitProps = {
   style?: StyleProp<ViewStyle>;
   dead?: boolean;
   gladiatorId?: string | number;
+  portraitId?: number;
   variant?: number;
 };
 
@@ -57,9 +58,13 @@ export default function GladiatorPortrait({
   style,
   dead = false,
   gladiatorId,
+  portraitId,
   variant,
 }: GladiatorPortraitProps) {
-  const portraitIndex = getPortraitIndex(gladiatorId, variant);
+  const portraitIndex =
+    portraitId !== undefined
+      ? Math.abs(portraitId - 1) % PORTRAITS.length
+      : getPortraitIndex(gladiatorId, variant);
 
   return (
     <View style={[styles.container, style]}>

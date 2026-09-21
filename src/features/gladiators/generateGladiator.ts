@@ -19,6 +19,7 @@ interface GenerateGladiatorOptions {
   worldId: string;
   ludusId?: string;
   profile?: GladiatorProfile;
+  portraitId?: number;
 }
 
 function clampStat(value: number) {
@@ -92,6 +93,7 @@ export function generateGladiator({
   worldId,
   ludusId = "",
   profile = "random",
+  portraitId,
 }: GenerateGladiatorOptions): Gladiator {
   const age = randomInt(18, 32);
 
@@ -173,15 +175,10 @@ export function generateGladiator({
   const potential = randomInt(45, 95);
 
   const finalStrength = clampStat(strength);
-
   const finalEndurance = clampStat(endurance);
-
   const finalAgility = clampStat(agility);
-
   const finalAttack = clampStat(attack);
-
   const finalDefense = clampStat(defense);
-
   const finalCourage = clampStat(courage);
 
   const averagePower = calculateAveragePower(
@@ -208,6 +205,8 @@ export function generateGladiator({
 
   return {
     id: `gladiator-${Date.now()}-${Math.random()}`,
+
+    portraitId: portraitId ?? randomInt(1, 16),
 
     worldId,
     ludusId,

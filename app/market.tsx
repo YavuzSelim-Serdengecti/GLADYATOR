@@ -15,6 +15,7 @@ import { generateGladiatorPool } from "../src/features/gladiators/generateGladia
 import { createAuction } from "../src/features/market/createAuction";
 import { useGameStore } from "../src/store/gameStore";
 import { Auction } from "../src/types/game";
+
 const MARKET_ACTION_COST = 1;
 const MARKET_REFRESH_COST = 1;
 const MARKET_GLADIATOR_COUNT = 5;
@@ -391,7 +392,10 @@ export default function MarketScreen() {
                   height: cardHeight,
                 },
               ]}>
-              <GladiatorPortrait style={styles.portrait} />
+              <GladiatorPortrait
+                style={styles.portrait}
+                portraitId={gladiator.portraitId}
+              />
 
               <View style={styles.identity}>
                 <Text style={styles.name} numberOfLines={1}>
@@ -419,15 +423,10 @@ export default function MarketScreen() {
 
               <View style={styles.statsGrid}>
                 <Stat label="Güç" value={gladiator.strength} />
-
                 <Stat label="Dayanıklılık" value={gladiator.endurance} />
-
                 <Stat label="Çeviklik" value={gladiator.agility} />
-
                 <Stat label="Saldırı" value={gladiator.attack} />
-
                 <Stat label="Savunma" value={gladiator.defense} />
-
                 <Stat label="Cesaret" value={gladiator.courage} />
               </View>
 
@@ -435,7 +434,6 @@ export default function MarketScreen() {
 
               <View style={styles.potentialRow}>
                 <Text style={styles.statLabel}>Potansiyel</Text>
-
                 <Text style={styles.unknown}>???</Text>
               </View>
 
@@ -448,7 +446,6 @@ export default function MarketScreen() {
               <View style={styles.bottomArea}>
                 <View>
                   <Text style={styles.priceLabel}>GÜNCEL TEKLİF</Text>
-
                   <Text style={styles.price}>{auction.currentBid} D</Text>
                 </View>
 
@@ -486,7 +483,6 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <View style={styles.statItem}>
       <Text style={styles.statLabel}>{label}</Text>
-
       <Text style={styles.statValue}>{value}</Text>
     </View>
   );

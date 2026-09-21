@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { generateGladiator } from "../src/features/gladiators/generateGladiator";
 import { useGameStore } from "../src/store/gameStore";
+
 export default function StarterGladiatorScreen() {
   const insets = useSafeAreaInsets();
 
@@ -42,21 +43,34 @@ export default function StarterGladiatorScreen() {
       return [];
     }
 
+    const portraitIds = Array.from({ length: 16 }, (_, index) => index + 1);
+
+    for (let i = portraitIds.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+
+      [portraitIds[i], portraitIds[j]] = [portraitIds[j], portraitIds[i]];
+    }
+
     return [
       generateGladiator({
         worldId: world.id,
         ludusId: ludus.id,
         profile: "strong",
+        portraitId: portraitIds[0],
       }),
+
       generateGladiator({
         worldId: world.id,
         ludusId: ludus.id,
         profile: "fast",
+        portraitId: portraitIds[1],
       }),
+
       generateGladiator({
         worldId: world.id,
         ludusId: ludus.id,
         profile: "balanced",
+        portraitId: portraitIds[2],
       }),
     ];
   }, [world?.id, ludus?.id]);
@@ -152,7 +166,10 @@ export default function StarterGladiatorScreen() {
                   selected && styles.selectedCard,
                 ]}>
                 <View style={styles.portrait}>
-                  <GladiatorPortrait style={styles.portraitImage} />
+                  <GladiatorPortrait
+                    style={styles.portraitImage}
+                    portraitId={gladiator.portraitId}
+                  />
 
                   <Text style={styles.roleLabel}>{roleLabel}</Text>
 

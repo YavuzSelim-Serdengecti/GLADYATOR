@@ -179,7 +179,10 @@ export default function ArenaSelectGladiatorScreen() {
 
             return (
               <View key={gladiator.id} style={styles.card}>
-                <GladiatorPortrait style={styles.portrait} />
+                <GladiatorPortrait
+                  style={styles.portrait}
+                  portraitId={gladiator.portraitId}
+                />
 
                 <View style={styles.identityArea}>
                   <Text style={styles.cardEyebrow}>
