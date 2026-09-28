@@ -281,7 +281,7 @@ export interface TwentyOneGameState {
   active: boolean;
   playerScore: number;
   houseScore: number;
-  bet: 100;
+  bet: number;
   finished: boolean;
   result: "win" | "lose" | "draw" | null;
 }
