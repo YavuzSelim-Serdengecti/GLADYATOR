@@ -9,13 +9,13 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
-  Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { dailyRewards } from "../src/features/dailyReward/dailyReward";
 import { useGameStore } from "../src/store/gameStore";
@@ -90,11 +90,11 @@ export default function DailyRewardScreen() {
         ]}>
         <Text style={styles.error}>LUDUS BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.errorButton}
           onPress={() => router.replace("/")}>
           <Text style={styles.errorButtonText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -194,9 +194,9 @@ export default function DailyRewardScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← HARİTA</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -316,7 +316,7 @@ export default function DailyRewardScreen() {
             })}
           </Animated.View>
 
-          <Pressable
+          <GameButton
             style={[
               styles.spinButton,
               (!dailyRewardAvailable || spinning) && styles.disabledButton,
@@ -335,7 +335,7 @@ export default function DailyRewardScreen() {
                   ? "ÇARKI ÇEVİR"
                   : "BUGÜN ALINDI"}
             </Text>
-          </Pressable>
+          </GameButton>
 
           <Text style={styles.realDayText}>
             HER GERÇEK GÜN 1 ÜCRETSİZ ÇEVİRME
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

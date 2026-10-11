@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { generateGladiator } from "../src/features/gladiators/generateGladiator";
 import { useGameStore } from "../src/store/gameStore";
@@ -117,9 +117,9 @@ export default function StarterGladiatorScreen() {
         ]}>
         <Text style={styles.errorTitle}>OYUN BULUNAMADI</Text>
 
-        <Pressable onPress={() => router.replace("/")}>
+        <GameButton onPress={() => router.replace("/")}>
           <Text style={styles.backText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -154,8 +154,10 @@ export default function StarterGladiatorScreen() {
               index === 0 ? "GÜÇLÜ" : index === 1 ? "HIZLI" : "DENGELİ";
 
             return (
-              <Pressable
+              <GameButton
                 key={gladiator.id}
+                pressedScale={0.98}
+                pressedOpacity={0.94}
                 onPress={() => setSelectedId(gladiator.id)}
                 style={[
                   styles.card,
@@ -215,13 +217,13 @@ export default function StarterGladiatorScreen() {
 
                   <Text style={styles.potentialValue}>???</Text>
                 </View>
-              </Pressable>
+              </GameButton>
             );
           })}
         </View>
 
         <View style={styles.footer}>
-          <Pressable
+          <GameButton
             disabled={!selectedGladiator}
             onPress={handleConfirm}
             style={[
@@ -235,7 +237,7 @@ export default function StarterGladiatorScreen() {
               ]}>
               {selectedGladiator ? "LUDUSA KAT" : "BİR GLADYATÖR SEÇ"}
             </Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
     </View>

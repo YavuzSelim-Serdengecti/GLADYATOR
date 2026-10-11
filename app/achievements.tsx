@@ -6,7 +6,6 @@ import {
 import { router } from "expo-router";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import { ACHIEVEMENTS } from "../src/features/achievements/achievements";
 import { useGameStore } from "../src/store/gameStore";
 
@@ -102,9 +102,9 @@ export default function AchievementsScreen() {
             </Text>
           </View>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← GERİ</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -225,11 +225,11 @@ export default function AchievementsScreen() {
                     <Text style={styles.claimedBadgeText}>ÖDÜL ALINDI</Text>
                   </View>
                 ) : completed ? (
-                  <Pressable
+                  <GameButton
                     style={styles.claimButton}
                     onPress={() => claimAchievementReward(achievement.id)}>
                     <Text style={styles.claimButtonText}>ÖDÜLÜ AL</Text>
-                  </Pressable>
+                  </GameButton>
                 ) : (
                   <View style={styles.lockedBadge}>
                     <Text style={styles.lockedText}>DEVAM EDİYOR</Text>
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

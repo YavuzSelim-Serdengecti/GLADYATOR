@@ -1,19 +1,20 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 
 import {
-    getCurrentUser,
-    signInWithEmail,
-    signOut,
-    signUpWithEmail,
+  getCurrentUser,
+  signInWithEmail,
+  signOut,
+  signUpWithEmail,
 } from "../src/features/auth/authService";
 
 import {
-    CloudSaveRow,
-    downloadCloudSave,
+  CloudSaveRow,
+  downloadCloudSave,
 } from "../src/features/save/cloudSaveService";
 
 import { GameSaveData, loadGameState } from "../src/features/save/saveSystem";
@@ -405,9 +406,9 @@ export default function AccountScreen() {
           <View style={styles.headerRight}>
             <Text style={styles.accountEmail}>{currentEmail}</Text>
 
-            <Pressable onPress={() => router.back()}>
+            <GameButton onPress={() => router.back()}>
               <Text style={styles.backText}>← GERİ DÖN</Text>
-            </Pressable>
+            </GameButton>
           </View>
         </View>
 
@@ -463,16 +464,16 @@ export default function AccountScreen() {
                   Son kayıt: {formatSaveDate(localPreview.savedAt)}
                 </Text>
 
-                <Pressable
+                <GameButton
                   style={styles.primaryButton}
                   disabled={busy}
                   onPress={handleContinueLocal}>
                   <Text style={styles.primaryButtonText}>
                     BU KAYITLA DEVAM ET
                   </Text>
-                </Pressable>
+                </GameButton>
 
-                <Pressable
+                <GameButton
                   style={[
                     styles.secondaryButton,
                     busy && styles.disabledButton,
@@ -491,7 +492,7 @@ export default function AccountScreen() {
                         ? "☁️ BULUT KAYDINI GÜNCELLE"
                         : "☁️ BULUTA YEDEKLE"}
                   </Text>
-                </Pressable>
+                </GameButton>
               </>
             ) : (
               <View style={styles.emptyArea}>
@@ -561,7 +562,7 @@ export default function AccountScreen() {
                   Son yedek: {formatSaveDate(cloudPreview.savedAt)}
                 </Text>
 
-                <Pressable
+                <GameButton
                   style={[
                     styles.primaryButton,
                     cloudLoadArmed && styles.dangerButton,
@@ -579,7 +580,7 @@ export default function AccountScreen() {
                         ? "↓ BU KAYDI CİHAZA YÜKLE"
                         : "↓ BU KAYDI CİHAZA İNDİR"}
                   </Text>
-                </Pressable>
+                </GameButton>
 
                 <Text style={styles.warningText}>
                   Bulut kaydını cihaza yüklemek, mevcut cihaz kaydının yerini
@@ -611,9 +612,9 @@ export default function AccountScreen() {
             yedektir.
           </Text>
 
-          <Pressable disabled={busy} onPress={handleLogout}>
+          <GameButton disabled={busy} onPress={handleLogout}>
             <Text style={styles.logoutText}>ÇIKIŞ YAP</Text>
-          </Pressable>
+          </GameButton>
         </View>
 
         <GameModal
@@ -641,9 +642,9 @@ export default function AccountScreen() {
           </Text>
         </View>
 
-        <Pressable onPress={() => router.back()}>
+        <GameButton onPress={() => router.back()}>
           <Text style={styles.backText}>← GERİ DÖN</Text>
-        </Pressable>
+        </GameButton>
       </View>
 
       <View style={styles.mainArea}>
@@ -683,7 +684,7 @@ export default function AccountScreen() {
               style={styles.input}
             />
 
-            <Pressable
+            <GameButton
               style={[styles.loginButton, loading && styles.disabledButton]}
               disabled={loading}
               onPress={handleSubmit}>
@@ -694,7 +695,7 @@ export default function AccountScreen() {
                     ? "GİRİŞ YAP"
                     : "HESAP OLUŞTUR"}
               </Text>
-            </Pressable>
+            </GameButton>
 
             <View style={styles.modeArea}>
               <Text style={styles.modeQuestion}>
@@ -703,7 +704,7 @@ export default function AccountScreen() {
                   : "Zaten hesabın var mı?"}
               </Text>
 
-              <Pressable
+              <GameButton
                 onPress={() => {
                   setMode(mode === "login" ? "register" : "login");
                   setPassword("");
@@ -711,7 +712,7 @@ export default function AccountScreen() {
                 <Text style={styles.modeButtonText}>
                   {mode === "login" ? "HESAP OLUŞTUR" : "GİRİŞ YAP"}
                 </Text>
-              </Pressable>
+              </GameButton>
             </View>
           </View>
 

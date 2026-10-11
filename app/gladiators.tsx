@@ -6,7 +6,6 @@ import {
 import { router } from "expo-router";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,8 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useGameStore } from "../src/store/gameStore";
 
+import GameButton from "../src/components/GameButton";
 import GladiatorPortrait from "../src/components/GladiatorPortrait";
-
 export default function GladiatorsScreen() {
   const insets = useSafeAreaInsets();
 
@@ -128,9 +127,9 @@ export default function GladiatorsScreen() {
             </>
           )}
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← LUDUS</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 

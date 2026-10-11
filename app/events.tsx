@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { useGameStore } from "../src/store/gameStore";
 import { GameEvent, GameEventDecision } from "../src/types/game";
@@ -63,7 +63,6 @@ export default function EventsScreen() {
 
   const handleDecision = (event: GameEvent, decision: GameEventDecision) => {
     const result = resolveEvent(event.id, decision);
-
     showModal("KARAR SONUCU", result);
   };
 
@@ -89,14 +88,12 @@ export default function EventsScreen() {
         ]}>
         <View style={styles.identity}>
           <Text style={styles.eyebrow}>LUDUS YÖNETİMİ</Text>
-
           <Text style={styles.topTitle}>OLAYLAR</Text>
         </View>
 
         <View style={styles.contextArea}>
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>BEKLEYEN</Text>
-
             <Text style={styles.contextValue}>{pendingEvents.length}</Text>
           </View>
 
@@ -104,7 +101,6 @@ export default function EventsScreen() {
 
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>KAÇIŞ</Text>
-
             <Text style={styles.contextValue}>{escapeCount}</Text>
           </View>
 
@@ -112,7 +108,6 @@ export default function EventsScreen() {
 
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>İSYAN</Text>
-
             <Text style={styles.contextValue}>{rebellionCount}</Text>
           </View>
         </View>
@@ -130,9 +125,9 @@ export default function EventsScreen() {
             </>
           )}
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← LUDUS</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -146,7 +141,6 @@ export default function EventsScreen() {
         ]}>
         <View>
           <Text style={styles.pageEyebrow}>LUDUS KARARLARI</Text>
-
           <Text style={styles.pageTitle}>BEKLEYEN OLAYLAR</Text>
         </View>
 
@@ -173,9 +167,7 @@ export default function EventsScreen() {
             },
           ]}>
           <Text style={styles.emptyIcon}>◇</Text>
-
           <Text style={styles.emptyEyebrow}>LUDUS SAKİN</Text>
-
           <Text style={styles.emptyTitle}>BEKLEYEN OLAY YOK</Text>
 
           <Text style={styles.emptyText}>
@@ -349,17 +341,17 @@ function DecisionButtons({
   if (event.type === "freedom_request") {
     return (
       <View style={styles.buttons}>
-        <Pressable
+        <GameButton
           style={styles.positiveButton}
           onPress={() => onDecision("grant_freedom")}>
           <Text style={styles.positiveButtonText}>ÖZGÜRLÜĞÜNÜ VER</Text>
-        </Pressable>
+        </GameButton>
 
-        <Pressable
+        <GameButton
           style={styles.negativeButton}
           onPress={() => onDecision("deny_freedom")}>
           <Text style={styles.negativeButtonText}>REDDET</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -367,34 +359,34 @@ function DecisionButtons({
   if (event.type === "escape_attempt") {
     return (
       <View style={styles.buttons}>
-        <Pressable
+        <GameButton
           style={styles.positiveButton}
           onPress={() => onDecision("forgive_escape")}>
           <Text style={styles.positiveButtonText}>AFFET</Text>
-        </Pressable>
+        </GameButton>
 
-        <Pressable
+        <GameButton
           style={styles.negativeButton}
           onPress={() => onDecision("punish_escape")}>
           <Text style={styles.negativeButtonText}>CEZALANDIR</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
 
   return (
     <View style={styles.buttons}>
-      <Pressable
+      <GameButton
         style={styles.dangerButton}
         onPress={() => onDecision("suppress_rebellion")}>
         <Text style={styles.dangerButtonText}>İSYANI BASTIR</Text>
-      </Pressable>
+      </GameButton>
 
-      <Pressable
+      <GameButton
         style={styles.positiveButton}
         onPress={() => onDecision("release_rebel")}>
         <Text style={styles.positiveButtonText}>SERBEST BIRAK</Text>
-      </Pressable>
+      </GameButton>
     </View>
   );
 }
@@ -442,7 +434,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

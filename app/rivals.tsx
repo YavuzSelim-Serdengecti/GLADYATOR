@@ -6,7 +6,6 @@ import {
 import { router } from "expo-router";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import { useGameStore } from "../src/store/gameStore";
 
 export default function RivalsScreen() {
@@ -79,9 +79,9 @@ export default function RivalsScreen() {
             </>
           )}
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← HARİTA</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

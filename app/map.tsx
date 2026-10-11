@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 
 import {
@@ -329,11 +330,11 @@ export default function MapScreen() {
         ]}>
         <Text style={styles.errorTitle}>OYUN BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.menuButton}
           onPress={() => router.replace("/")}>
           <Text style={styles.menuButtonText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -358,7 +359,6 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
-      {/* TOP BAR */}
       <View
         style={[
           styles.topBar,
@@ -401,7 +401,7 @@ export default function MapScreen() {
         </View>
 
         <View style={styles.resources}>
-          <Pressable onPress={() => router.push("/financial-status")}>
+          <GameButton onPress={() => router.push("/financial-status")}>
             <Text
               style={[
                 styles.resource,
@@ -409,7 +409,7 @@ export default function MapScreen() {
               ]}>
               🪙 {ludus.denarius}
             </Text>
-          </Pressable>
+          </GameButton>
 
           <Text style={styles.resource}>★ {ludus.fame}</Text>
 
@@ -418,7 +418,7 @@ export default function MapScreen() {
           </Text>
 
           {bankruptcyState.status !== "stable" && (
-            <Pressable
+            <GameButton
               style={[
                 styles.financialBadge,
                 bankruptcyState.status === "warning" && styles.warningBadge,
@@ -430,14 +430,14 @@ export default function MapScreen() {
               <Text style={styles.financialBadgeText}>
                 {financialStatusLabel}
               </Text>
-            </Pressable>
+            </GameButton>
           )}
 
           <View style={styles.resourceDivider} />
 
           <Text style={styles.day}>GÜN {world.currentDay}</Text>
 
-          <Pressable
+          <GameButton
             style={[
               styles.endDayButton,
               bankruptcyState.bankrupt && styles.disabledEndDayButton,
@@ -446,11 +446,10 @@ export default function MapScreen() {
             <Text style={styles.endDayButtonText}>
               {bankruptcyState.bankrupt ? "İFLAS" : "GÜNÜ BİTİR"}
             </Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
-      {/* REAL ROME MAP */}
       <ImageBackground
         source={require("../assets/images/map/rome-map.jpeg")}
         resizeMode="cover"
@@ -458,7 +457,6 @@ export default function MapScreen() {
         imageStyle={styles.mapImage}>
         <View style={styles.mapShade} />
 
-        {/* MAP MENU */}
         <View
           style={[
             styles.mapMenuContainer,
@@ -466,7 +464,7 @@ export default function MapScreen() {
               right: safeRight,
             },
           ]}>
-          <Pressable
+          <GameButton
             style={[
               styles.mapMenuToggle,
               mapMenuOpen && styles.mapMenuToggleActive,
@@ -475,38 +473,38 @@ export default function MapScreen() {
             <Text style={styles.mapMenuToggleText}>
               {mapMenuOpen ? "KAPAT" : "MENÜ"}
             </Text>
-          </Pressable>
+          </GameButton>
 
           {mapMenuOpen && (
             <View style={styles.mapMenuPanel}>
-              <Pressable
+              <GameButton
                 style={styles.mapMenuItem}
                 onPress={() => {
                   setMapMenuOpen(false);
                   router.push("/rewarded-ads");
                 }}>
                 <Text style={styles.mapMenuItemText}>ÖDÜLLER</Text>
-              </Pressable>
+              </GameButton>
 
-              <Pressable
+              <GameButton
                 style={styles.mapMenuItem}
                 onPress={() => {
                   setMapMenuOpen(false);
                   router.push("/achievements");
                 }}>
                 <Text style={styles.mapMenuItemText}>BAŞARIMLAR</Text>
-              </Pressable>
+              </GameButton>
 
-              <Pressable
+              <GameButton
                 style={styles.mapMenuItem}
                 onPress={() => {
                   setMapMenuOpen(false);
                   router.push("/regions");
                 }}>
                 <Text style={styles.mapMenuItemText}>BÖLGELER</Text>
-              </Pressable>
+              </GameButton>
 
-              <Pressable
+              <GameButton
                 style={[
                   styles.mapMenuItem,
                   dailyRewardAvailable && styles.activeMapMenuItem,
@@ -533,9 +531,9 @@ export default function MapScreen() {
                 {dailyRewardAvailable && (TEST_MODE || dailyRewardUnlocked) && (
                   <View style={styles.rewardDot} />
                 )}
-              </Pressable>
+              </GameButton>
 
-              <Pressable
+              <GameButton
                 style={[
                   styles.mapMenuItem,
                   !TEST_MODE && !rivalsUnlocked && styles.lockedMapMenuItem,
@@ -554,12 +552,10 @@ export default function MapScreen() {
                   {!TEST_MODE && !rivalsUnlocked ? "🔒 " : ""}
                   RAKİPLER
                 </Text>
-              </Pressable>
+              </GameButton>
             </View>
           )}
         </View>
-
-        {/* MAP LOCATIONS */}
 
         <MapLocation
           title="LUDUS"

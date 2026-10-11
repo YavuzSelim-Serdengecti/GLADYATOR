@@ -7,7 +7,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
+  Animated,
+  Easing,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +16,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
+import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { arenas } from "../src/data/arenas";
 
 import {
@@ -31,9 +34,9 @@ import {
 
 import { applyEquipmentBonuses } from "../src/features/equipment/getEquipmentBonuses";
 
-import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { useGameStore } from "../src/store/gameStore";
 import { randomInt } from "../src/utils/random";
+
 type BattleTurn = "player" | "enemy";
 
 export default function ArenaBattleScreen() {
@@ -90,6 +93,7 @@ export default function ArenaBattleScreen() {
 
   const [isFinished, setIsFinished] = useState(false);
   const [playerWon, setPlayerWon] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const [turn, setTurn] = useState<BattleTurn>("player");
 
@@ -101,8 +105,113 @@ export default function ArenaBattleScreen() {
 
   const resultApplied = useRef(false);
 
+  const playerMoveX = useRef(new Animated.Value(0)).current;
+  const enemyMoveX = useRef(new Animated.Value(0)).current;
+
   const safeLeft = Math.max(24, insets.left + 12);
   const safeRight = Math.max(24, insets.right + 12);
+
+  const animatePlayerAttack = (onComplete: () => void) => {
+    setIsAnimating(true);
+
+    Animated.sequence([
+      Animated.timing(playerMoveX, {
+        toValue: 32,
+        duration: 110,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(playerMoveX, {
+        toValue: 0,
+        duration: 140,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsAnimating(false);
+      onComplete();
+    });
+  };
+
+  const animateEnemyAttack = (onComplete: () => void) => {
+    setIsAnimating(true);
+
+    Animated.sequence([
+      Animated.timing(enemyMoveX, {
+        toValue: -32,
+        duration: 110,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(enemyMoveX, {
+        toValue: 0,
+        duration: 140,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsAnimating(false);
+      onComplete();
+    });
+  };
+
+  const animateEnemyHit = () => {
+    Animated.sequence([
+      Animated.timing(enemyMoveX, {
+        toValue: 7,
+        duration: 45,
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(enemyMoveX, {
+        toValue: -7,
+        duration: 45,
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(enemyMoveX, {
+        toValue: 4,
+        duration: 45,
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(enemyMoveX, {
+        toValue: 0,
+        duration: 45,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const animatePlayerHit = () => {
+    Animated.sequence([
+      Animated.timing(playerMoveX, {
+        toValue: -7,
+        duration: 45,
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(playerMoveX, {
+        toValue: 7,
+        duration: 45,
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(playerMoveX, {
+        toValue: -4,
+        duration: 45,
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(playerMoveX, {
+        toValue: 0,
+        duration: 45,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
   if (!fontsLoaded) {
     return (
@@ -117,11 +226,11 @@ export default function ArenaBattleScreen() {
       <View style={styles.center}>
         <Text style={styles.error}>DÖVÜŞ BİLGİLERİ BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.errorButton}
           onPress={() => router.replace("/arena")}>
           <Text style={styles.errorButtonText}>ARENALARA DÖN</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -220,18 +329,38 @@ export default function ArenaBattleScreen() {
 
       const action = chooseEnemyAction(updatedEnemy);
 
-      let message = "";
-
       if (action === "attack") {
-        const result = performAttack(updatedEnemy, updatedPlayer);
+        animateEnemyAttack(() => {
+          const result = performAttack(updatedEnemy, updatedPlayer);
 
-        message = result.message;
-      } else {
-        const result = performDefend(updatedEnemy);
-        message = result.message;
+          animatePlayerHit();
+
+          setBattleLog((current) => [...current, result.message]);
+
+          setPlayer({
+            ...updatedPlayer,
+          });
+
+          setEnemy({
+            ...updatedEnemy,
+          });
+
+          if (updatedPlayer.currentHp <= 0) {
+            finishBattle(false, updatedPlayer.currentHp);
+            return;
+          }
+
+          setTurn("player");
+
+          setBattleLog((current) => [...current, "Sıra tekrar sende."]);
+        });
+
+        return;
       }
 
-      setBattleLog((current) => [...current, message]);
+      const result = performDefend(updatedEnemy);
+
+      setBattleLog((current) => [...current, result.message]);
 
       setPlayer({
         ...updatedPlayer,
@@ -241,11 +370,6 @@ export default function ArenaBattleScreen() {
         ...updatedEnemy,
       });
 
-      if (updatedPlayer.currentHp <= 0) {
-        finishBattle(false, updatedPlayer.currentHp);
-        return;
-      }
-
       setTurn("player");
 
       setBattleLog((current) => [...current, "Sıra tekrar sende."]);
@@ -253,7 +377,7 @@ export default function ArenaBattleScreen() {
   };
 
   const handleAttack = () => {
-    if (isFinished || turn !== "player") {
+    if (isFinished || turn !== "player" || isAnimating) {
       return;
     }
 
@@ -265,23 +389,27 @@ export default function ArenaBattleScreen() {
       ...enemy,
     };
 
-    const result = performAttack(updatedPlayer, updatedEnemy);
+    animatePlayerAttack(() => {
+      const result = performAttack(updatedPlayer, updatedEnemy);
 
-    setBattleLog((current) => [...current, result.message]);
+      animateEnemyHit();
 
-    setPlayer(updatedPlayer);
-    setEnemy(updatedEnemy);
+      setBattleLog((current) => [...current, result.message]);
 
-    if (updatedEnemy.currentHp <= 0) {
-      finishBattle(true, updatedPlayer.currentHp);
-      return;
-    }
+      setPlayer(updatedPlayer);
+      setEnemy(updatedEnemy);
 
-    runEnemyTurn(updatedPlayer, updatedEnemy);
+      if (updatedEnemy.currentHp <= 0) {
+        finishBattle(true, updatedPlayer.currentHp);
+        return;
+      }
+
+      runEnemyTurn(updatedPlayer, updatedEnemy);
+    });
   };
 
   const handleDefend = () => {
-    if (isFinished || turn !== "player") {
+    if (isFinished || turn !== "player" || isAnimating) {
       return;
     }
 
@@ -302,7 +430,7 @@ export default function ArenaBattleScreen() {
     runEnemyTurn(updatedPlayer, updatedEnemy);
   };
 
-  const buttonsDisabled = isFinished || turn !== "player";
+  const buttonsDisabled = isFinished || turn !== "player" || isAnimating;
 
   const playerHpPercent = Math.max(
     0,
@@ -373,10 +501,13 @@ export default function ArenaBattleScreen() {
         ]}>
         <View style={styles.fightArea}>
           {/* PLAYER */}
-          <View
+          <Animated.View
             style={[
               styles.fighter,
               turn === "player" && !isFinished && styles.activePlayer,
+              {
+                transform: [{ translateX: playerMoveX }],
+              },
             ]}>
             <View style={styles.fighterTop}>
               <Text style={styles.playerLabel}>SENİN GLADYATÖRÜN</Text>
@@ -444,7 +575,7 @@ export default function ArenaBattleScreen() {
                 {player.defending ? "SAVUNMADA" : "HAZIR"}
               </Text>
             </View>
-          </View>
+          </Animated.View>
 
           {/* CENTER */}
           <View style={styles.centerArea}>
@@ -457,7 +588,7 @@ export default function ArenaBattleScreen() {
                 </Text>
 
                 <View style={styles.actions}>
-                  <Pressable
+                  <GameButton
                     disabled={buttonsDisabled}
                     style={[
                       styles.attackButton,
@@ -471,9 +602,9 @@ export default function ArenaBattleScreen() {
                       ]}>
                       SALDIR
                     </Text>
-                  </Pressable>
+                  </GameButton>
 
-                  <Pressable
+                  <GameButton
                     disabled={buttonsDisabled}
                     style={[
                       styles.defendButton,
@@ -487,7 +618,7 @@ export default function ArenaBattleScreen() {
                       ]}>
                       SAVUN
                     </Text>
-                  </Pressable>
+                  </GameButton>
                 </View>
               </>
             ) : (
@@ -524,21 +655,24 @@ export default function ArenaBattleScreen() {
                   </>
                 )}
 
-                <Pressable
+                <GameButton
                   style={styles.continueButton}
                   onPress={() => router.replace("/arena")}>
                   <Text style={styles.continueText}>DEVAM ET</Text>
-                </Pressable>
+                </GameButton>
               </View>
             )}
           </View>
 
           {/* ENEMY */}
-          <View
+          <Animated.View
             style={[
               styles.fighter,
               turn === "enemy" && !isFinished && styles.activeEnemy,
               endgameScaling.active && styles.endgameEnemy,
+              {
+                transform: [{ translateX: enemyMoveX }],
+              },
             ]}>
             <View style={styles.fighterTop}>
               <Text style={styles.enemyLabel}>
@@ -608,7 +742,7 @@ export default function ArenaBattleScreen() {
                 {enemy.defending ? "SAVUNMADA" : "HAZIR"}
               </Text>
             </View>
-          </View>
+          </Animated.View>
         </View>
 
         {/* BATTLE LOG */}

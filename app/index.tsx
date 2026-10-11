@@ -9,13 +9,13 @@ import {
   ActivityIndicator,
   Animated,
   ImageBackground,
-  Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import { useGameStore } from "../src/store/gameStore";
 
 const AnimatedImageBackground =
@@ -326,13 +326,11 @@ export default function HomeScreen() {
 
       <View style={styles.overlay} />
 
-      {/* Toz / kül */}
       <View pointerEvents="none" style={styles.effects}>
         {DUST_PARTICLES.map((particle, index) => (
           <DustParticle key={index} {...particle} />
         ))}
 
-        {/* Uzak kuşlar */}
         <Bird top="18%" delay={1000} duration={9000} scale={1.1} />
         <Bird top="23%" delay={2200} duration={10000} scale={0.9} />
         <Bird top="14%" delay={3500} duration={11000} scale={0.75} />
@@ -349,64 +347,48 @@ export default function HomeScreen() {
         <Text style={styles.title}>GLADYATÖR</Text>
 
         <View style={styles.menu}>
-          <Pressable
+          <GameButton
             style={styles.menuItem}
             disabled={!hasSavedGame || isSaveLoading}
             onPress={handleContinueGame}>
-            {({ pressed }) => (
-              <View>
-                <Text
+            <View>
+              <Text
+                style={[
+                  styles.menuText,
+                  (!hasSavedGame || isSaveLoading) && styles.menuTextDisabled,
+                ]}>
+                {isSaveLoading ? "YÜKLENİYOR..." : "DEVAM ET"}
+              </Text>
+
+              {hasSavedGame && !isSaveLoading && (
+                <Animated.View
                   style={[
-                    styles.menuText,
-                    pressed && hasSavedGame && styles.menuTextActive,
+                    styles.activeLine,
+                    {
+                      opacity: lineOpacity,
+                      transform: [{ scaleX: lineScale }],
+                    },
+                  ]}
+                />
+              )}
+            </View>
+          </GameButton>
 
-                    (!hasSavedGame || isSaveLoading) && styles.menuTextDisabled,
-                  ]}>
-                  {isSaveLoading ? "YÜKLENİYOR..." : "DEVAM ET"}
-                </Text>
-
-                {hasSavedGame && !isSaveLoading && (
-                  <Animated.View
-                    style={[
-                      styles.activeLine,
-                      {
-                        opacity: lineOpacity,
-                        transform: [{ scaleX: lineScale }],
-                      },
-                    ]}
-                  />
-                )}
-              </View>
-            )}
-          </Pressable>
-
-          <Pressable
+          <GameButton
             style={styles.menuItem}
             onPress={() => router.push("/new-game")}>
-            {({ pressed }) => (
-              <Text style={[styles.menuText, pressed && styles.menuTextActive]}>
-                YENİ OYUN
-              </Text>
-            )}
-          </Pressable>
+            <Text style={styles.menuText}>YENİ OYUN</Text>
+          </GameButton>
 
-          <Pressable
+          <GameButton
             style={styles.menuItem}
             onPress={() => router.push("/account")}>
-            {({ pressed }) => (
-              <Text style={[styles.menuText, pressed && styles.menuTextActive]}>
-                HESAP
-              </Text>
-            )}
-          </Pressable>
+            <Text style={styles.menuText}>HESAP</Text>
+          </GameButton>
 
-          <Pressable style={styles.menuItem}>
-            {({ pressed }) => (
-              <Text style={[styles.menuText, pressed && styles.menuTextActive]}>
-                AYARLAR
-              </Text>
-            )}
-          </Pressable>
+          <GameButton style={styles.menuItem}>
+            <Text style={styles.menuText}>AYARLAR</Text>
+          </GameButton>
         </View>
       </View>
     </View>

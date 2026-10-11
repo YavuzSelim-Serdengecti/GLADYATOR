@@ -6,7 +6,6 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,9 +13,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { arenas } from "../src/data/arenas";
 import { useGameStore } from "../src/store/gameStore";
+
 export default function ArenaSelectGladiatorScreen() {
   const { arenaId } = useLocalSearchParams<{
     arenaId: string;
@@ -59,9 +60,11 @@ export default function ArenaSelectGladiatorScreen() {
       <View style={styles.center}>
         <Text style={styles.error}>ARENA BİLGİSİ BULUNAMADI</Text>
 
-        <Pressable style={styles.backButtonLarge} onPress={() => router.back()}>
+        <GameButton
+          style={styles.backButtonLarge}
+          onPress={() => router.back()}>
           <Text style={styles.backButtonLargeText}>GERİ DÖN</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -107,9 +110,9 @@ export default function ArenaSelectGladiatorScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← ARENALAR</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -243,8 +246,10 @@ export default function ArenaSelectGladiatorScreen() {
                   <SmallStat label="MORAL" value={`${gladiator.morale}`} />
                 </View>
 
-                <Pressable
+                <GameButton
                   style={styles.selectButton}
+                  pressedScale={0.98}
+                  pressedOpacity={0.9}
                   onPress={() =>
                     router.push({
                       pathname: "/arena-opponent",
@@ -257,7 +262,7 @@ export default function ArenaSelectGladiatorScreen() {
                   <Text style={styles.selectButtonText}>
                     BU GLADYATÖRLE DEVAM ET
                   </Text>
-                </Pressable>
+                </GameButton>
               </View>
             );
           })}

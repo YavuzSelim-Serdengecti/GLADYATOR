@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { useGameStore } from "../src/store/gameStore";
 
@@ -264,9 +264,9 @@ export default function StaffScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← LUDUS</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -303,9 +303,7 @@ export default function StaffScreen() {
             const staff = item.data;
 
             const locked = ludus.level < staff.requiredLudusLevel;
-
             const cantAfford = ludus.denarius < STAFF_HIRING_COST;
-
             const noAP = ludus.actionPoints < STAFF_ACTION_COST;
 
             return (
@@ -393,7 +391,7 @@ export default function StaffScreen() {
                       <Text style={styles.activeButtonText}>İŞE ALINDI</Text>
                     </View>
                   ) : (
-                    <Pressable
+                    <GameButton
                       disabled={cantAfford || noAP}
                       style={[
                         styles.hireButton,
@@ -417,7 +415,7 @@ export default function StaffScreen() {
                             ? "YETERSİZ DENARIUS"
                             : "İŞE AL · 300 D · 1 AP"}
                       </Text>
-                    </Pressable>
+                    </GameButton>
                   )}
                 </View>
               </View>
@@ -427,11 +425,8 @@ export default function StaffScreen() {
           const worker = item.data;
 
           const locked = ludus.level < worker.requiredLudusLevel;
-
           const full = worker.count >= worker.maxCount;
-
           const cantAfford = ludus.denarius < worker.hiringCost;
-
           const noAP = ludus.actionPoints < WORKER_ACTION_COST;
 
           return (
@@ -498,7 +493,7 @@ export default function StaffScreen() {
                     </Text>
                   </View>
                 ) : (
-                  <Pressable
+                  <GameButton
                     disabled={cantAfford || noAP}
                     style={[
                       styles.hireButton,
@@ -523,7 +518,7 @@ export default function StaffScreen() {
                           ? "YETERSİZ DENARIUS"
                           : `+1 İŞÇİ · ${worker.hiringCost} D · 1 AP`}
                     </Text>
-                  </Pressable>
+                  </GameButton>
                 )}
               </View>
             </View>
@@ -664,7 +659,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

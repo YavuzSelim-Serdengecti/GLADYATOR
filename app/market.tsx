@@ -2,13 +2,13 @@ import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
-  Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import GladiatorPortrait from "../src/components/GladiatorPortrait";
 import { generateGladiatorPool } from "../src/features/gladiators/generateGladiatorPool";
@@ -287,9 +287,9 @@ export default function MarketScreen() {
       <View style={styles.center}>
         <Text style={styles.error}>Oyun bulunamadı.</Text>
 
-        <Pressable onPress={() => router.replace("/")}>
+        <GameButton onPress={() => router.replace("/")}>
           <Text style={styles.backText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -315,15 +315,15 @@ export default function MarketScreen() {
           </View>
 
           <View style={styles.headerButtons}>
-            <Pressable
+            <GameButton
               style={styles.specialButton}
               onPress={() => router.push("/special-gladiators")}>
               <Text style={styles.specialButtonText}>★ ÖZEL GLADYATÖRLER</Text>
-            </Pressable>
+            </GameButton>
 
-            <Pressable onPress={() => router.back()}>
+            <GameButton onPress={() => router.back()}>
               <Text style={styles.backText}>← HARİTAYA DÖN</Text>
-            </Pressable>
+            </GameButton>
           </View>
         </View>
       </View>
@@ -334,12 +334,13 @@ export default function MarketScreen() {
         <View style={styles.refreshArea}>
           <Text style={styles.refreshText}>Satın alma: ⚡ 1 AP</Text>
 
-          <Pressable
+          <GameButton
             style={[
               styles.refreshButton,
               ludus.actionPoints < MARKET_REFRESH_COST &&
                 styles.disabledRefreshButton,
             ]}
+            disabled={ludus.actionPoints < MARKET_REFRESH_COST}
             onPress={handleRefreshMarket}>
             <Text
               style={[
@@ -349,7 +350,7 @@ export default function MarketScreen() {
               ]}>
               ↻ YENİLE · 1 AP
             </Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -449,11 +450,12 @@ export default function MarketScreen() {
                   <Text style={styles.price}>{auction.currentBid} D</Text>
                 </View>
 
-                <Pressable
+                <GameButton
                   style={[
                     styles.bidButton,
                     noActionPoints && styles.disabledBidButton,
                   ]}
+                  disabled={noActionPoints}
                   onPress={() => handleBid(auction)}>
                   <Text
                     style={[
@@ -462,7 +464,7 @@ export default function MarketScreen() {
                     ]}>
                     {noActionPoints ? "YETERSİZ AP" : `TEKLİF ${nextBid} D`}
                   </Text>
-                </Pressable>
+                </GameButton>
               </View>
             </View>
           );

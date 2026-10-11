@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { useGameStore } from "../src/store/gameStore";
 
@@ -137,9 +137,9 @@ export default function TavernScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← HARİTA</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -207,7 +207,7 @@ export default function TavernScreen() {
 
           <View style={styles.eventOptions}>
             {pendingTavernEvent.event.options.map((option) => (
-              <Pressable
+              <GameButton
                 key={option.id}
                 style={styles.choiceButton}
                 onPress={() => handleChoice(option.id)}>
@@ -218,7 +218,7 @@ export default function TavernScreen() {
                 <Text style={styles.choiceEffects} numberOfLines={1}>
                   {formatOptionEffects(option)}
                 </Text>
-              </Pressable>
+              </GameButton>
             ))}
           </View>
         </View>
@@ -308,7 +308,7 @@ export default function TavernScreen() {
                   <Text style={styles.costValue}>🪙 50 · ⚡ 1</Text>
                 </View>
 
-                <Pressable
+                <GameButton
                   disabled={disabled}
                   style={[
                     styles.visitButton,
@@ -329,7 +329,7 @@ export default function TavernScreen() {
                           ? "KAYNAK YETERSİZ"
                           : "TAVERNA'YA GÖNDER"}
                   </Text>
-                </Pressable>
+                </GameButton>
               </View>
             );
           })}
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

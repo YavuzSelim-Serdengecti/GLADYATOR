@@ -1,4 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, StyleSheet, Text, View } from "react-native";
+
+import GameButton from "./GameButton";
 
 type GameModalProps = {
   visible: boolean;
@@ -13,13 +16,55 @@ export default function GameModal({
   message,
   onClose,
 }: GameModalProps) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.92)).current;
+
+  useEffect(() => {
+    if (!visible) {
+      opacity.setValue(0);
+      scale.setValue(0.92);
+      return;
+    }
+
+    opacity.setValue(0);
+    scale.setValue(0.92);
+
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 180,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 180,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [visible, opacity, scale]);
+
   if (!visible) {
     return null;
   }
 
   return (
-    <View style={styles.overlay}>
-      <View style={styles.modal}>
+    <Animated.View
+      style={[
+        styles.overlay,
+        {
+          opacity,
+        },
+      ]}>
+      <Animated.View
+        style={[
+          styles.modal,
+          {
+            transform: [{ scale }],
+          },
+        ]}>
         <View style={styles.topLine} />
 
         <Text style={styles.eyebrow}>ROMA</Text>
@@ -30,22 +75,17 @@ export default function GameModal({
 
         <Text style={styles.message}>{message}</Text>
 
-        <Pressable style={styles.button} onPress={onClose}>
+        <GameButton style={styles.button} onPress={onClose}>
           <Text style={styles.buttonText}>TAMAM</Text>
-        </Pressable>
-      </View>
-    </View>
+        </GameButton>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    position: "absolute",
-
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
+    ...StyleSheet.absoluteFill,
 
     zIndex: 999,
 

@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import {
   GAME_REGIONS,
   getNextRegionUnlock,
@@ -45,11 +46,11 @@ export default function RegionsScreen() {
       <View style={styles.center}>
         <Text style={styles.error}>LUDUS BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.menuButton}
           onPress={() => router.replace("/")}>
           <Text style={styles.menuButtonText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -111,9 +112,9 @@ export default function RegionsScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← HARİTA</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -267,19 +268,16 @@ export default function RegionsScreen() {
                 {current ? (
                   <View style={styles.currentArea}>
                     <View style={styles.currentDot} />
-
                     <Text style={styles.currentText}>ŞU ANKİ BÖLGEN</Text>
                   </View>
                 ) : unlocked ? (
                   <View style={styles.availableArea}>
                     <View style={styles.availableDot} />
-
                     <Text style={styles.availableText}>ERİŞİME AÇIK</Text>
                   </View>
                 ) : (
                   <View style={styles.lockArea}>
                     <Text style={styles.lockLabel}>KİLİTLİ</Text>
-
                     <Text style={styles.lockRequirement}>
                       LV. {region.requiredLevel}
                     </Text>
@@ -301,7 +299,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

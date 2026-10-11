@@ -6,13 +6,14 @@ import {
 import { router } from "expo-router";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import GameButton from "../src/components/GameButton";
 
 import {
   SPECIAL_GLADIATORS,
@@ -60,7 +61,6 @@ export default function SpecialGladiatorsScreen() {
     <View style={styles.container}>
       <View style={styles.background} />
 
-      {/* TOP BAR */}
       <View
         style={[
           styles.topBar,
@@ -71,14 +71,12 @@ export default function SpecialGladiatorsScreen() {
         ]}>
         <View style={styles.identity}>
           <Text style={styles.eyebrow}>ROMA'NIN EFSANELERİ</Text>
-
           <Text style={styles.topTitle}>ÖZEL GLADYATÖRLER</Text>
         </View>
 
         <View style={styles.contextArea}>
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>EFSANE</Text>
-
             <Text style={styles.contextValue}>{SPECIAL_GLADIATORS.length}</Text>
           </View>
 
@@ -100,18 +98,16 @@ export default function SpecialGladiatorsScreen() {
           {playerLudus && (
             <>
               <Text style={styles.resource}>LV. {playerLudus.level}</Text>
-
               <Text style={styles.resource}>🪙 {playerLudus.denarius}</Text>
             </>
           )}
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← PAZAR</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
-      {/* PAGE HEADER */}
       <View
         style={[
           styles.pageHeader,
@@ -122,7 +118,6 @@ export default function SpecialGladiatorsScreen() {
         ]}>
         <View>
           <Text style={styles.pageEyebrow}>NADİR SAVAŞÇILAR</Text>
-
           <Text style={styles.pageTitle}>ROMA'NIN EFSANELERİ</Text>
         </View>
 
@@ -131,7 +126,6 @@ export default function SpecialGladiatorsScreen() {
         </Text>
       </View>
 
-      {/* CARDS */}
       <ScrollView
         horizontal
         bounces={false}
@@ -183,7 +177,6 @@ export default function SpecialGladiatorsScreen() {
 
               <View style={styles.infoRow}>
                 <Text style={styles.infoText}>{special.age} YAŞ</Text>
-
                 <Text style={styles.dot}>·</Text>
 
                 <Text style={styles.infoText}>
@@ -205,22 +198,16 @@ export default function SpecialGladiatorsScreen() {
 
               <View style={styles.statsBox}>
                 <Stat label="GÜÇ" value={special.strength} />
-
                 <Stat label="DAYANIKLILIK" value={special.endurance} />
-
                 <Stat label="ÇEVİKLİK" value={special.agility} />
-
                 <Stat label="SALDIRI" value={special.attack} />
-
                 <Stat label="SAVUNMA" value={special.defense} />
-
                 <Stat label="CESARET" value={special.courage} />
               </View>
 
               <View style={styles.bottomInfo}>
                 <View style={styles.valueBlock}>
                   <Text style={styles.smallLabel}>POTANSİYEL</Text>
-
                   <Text style={styles.highlightValue}>{special.potential}</Text>
                 </View>
 
@@ -283,7 +270,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

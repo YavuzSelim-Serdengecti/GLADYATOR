@@ -5,15 +5,10 @@ import {
 } from "@expo-google-fonts/cinzel";
 import { router } from "expo-router";
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { useGameStore } from "../src/store/gameStore";
 
@@ -147,9 +142,9 @@ export default function GamblingHouseScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← HARİTA</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -273,7 +268,7 @@ export default function GamblingHouseScreen() {
                 </Text>
               </View>
 
-              <Pressable
+              <GameButton
                 disabled={!canStartTwentyOne}
                 style={[
                   styles.playButton,
@@ -289,7 +284,7 @@ export default function GamblingHouseScreen() {
                     ? "KAYNAK YETERSİZ"
                     : "21'E BAŞLA · 100 D"}
                 </Text>
-              </Pressable>
+              </GameButton>
             </>
           ) : (
             <>
@@ -313,17 +308,17 @@ export default function GamblingHouseScreen() {
                   <Text style={styles.turnInfo}>KART ÇEK VEYA ELİNİ TUT</Text>
 
                   <View style={styles.twentyOneButtons}>
-                    <Pressable
+                    <GameButton
                       style={styles.secondaryButton}
                       onPress={handleHit}>
                       <Text style={styles.secondaryButtonText}>KART ÇEK</Text>
-                    </Pressable>
+                    </GameButton>
 
-                    <Pressable
+                    <GameButton
                       style={styles.playButtonSmall}
                       onPress={handleStand}>
                       <Text style={styles.playButtonText}>DUR</Text>
-                    </Pressable>
+                    </GameButton>
                   </View>
                 </>
               ) : (
@@ -337,7 +332,7 @@ export default function GamblingHouseScreen() {
                     {getResultLabel(twentyOneGame.result)}
                   </Text>
 
-                  <Pressable
+                  <GameButton
                     disabled={!canStartTwentyOne}
                     style={[
                       styles.playButton,
@@ -353,7 +348,7 @@ export default function GamblingHouseScreen() {
                         ? "KAYNAK YETERSİZ"
                         : "YENİ OYUN · 100 D"}
                     </Text>
-                  </Pressable>
+                  </GameButton>
                 </>
               )}
             </>
@@ -381,7 +376,7 @@ function BetButton({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <GameButton
       disabled={disabled}
       style={[styles.betButton, disabled && styles.disabledButton]}
       onPress={onPress}>
@@ -389,7 +384,7 @@ function BetButton({
         style={[styles.betButtonText, disabled && styles.disabledButtonText]}>
         {bet} D
       </Text>
-    </Pressable>
+    </GameButton>
   );
 }
 
@@ -436,7 +431,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

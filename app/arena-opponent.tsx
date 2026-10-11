@@ -5,15 +5,10 @@ import {
 } from "@expo-google-fonts/cinzel";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { arenas } from "../src/data/arenas";
 import { generateArenaOpponent } from "../src/features/arena/generateArenaOpponent";
@@ -102,9 +97,9 @@ export default function ArenaOpponentScreen() {
       <View style={styles.center}>
         <Text style={styles.error}>DÖVÜŞ BİLGİLERİ BULUNAMADI</Text>
 
-        <Pressable style={styles.errorButton} onPress={() => router.back()}>
+        <GameButton style={styles.errorButton} onPress={() => router.back()}>
           <Text style={styles.errorButtonText}>GERİ DÖN</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -204,9 +199,9 @@ export default function ArenaOpponentScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← SEÇİM</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -310,11 +305,12 @@ export default function ArenaOpponentScreen() {
           </View>
         </View>
 
-        <Pressable
+        <GameButton
           style={[
             styles.fightButton,
             insufficientActionPoints && styles.disabledFightButton,
           ]}
+          disabled={insufficientActionPoints}
           onPress={handleStartBattle}>
           <Text
             style={[
@@ -325,7 +321,7 @@ export default function ArenaOpponentScreen() {
               ? "YETERSİZ AP"
               : `DÖVÜŞÜ BAŞLAT · ${ARENA_ACTION_COST} AP`}
           </Text>
-        </Pressable>
+        </GameButton>
       </View>
 
       <GameModal

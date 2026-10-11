@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { initialEquipment } from "../src/data/equipment";
 import { useGameStore } from "../src/store/gameStore";
@@ -194,9 +194,9 @@ export default function InventoryScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← LUDUS</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -215,7 +215,7 @@ export default function InventoryScreen() {
         </View>
 
         <View style={styles.tabs}>
-          <Pressable
+          <GameButton
             style={[styles.tab, activeTab === "shop" && styles.activeTab]}
             onPress={() => setActiveTab("shop")}>
             <Text
@@ -225,9 +225,9 @@ export default function InventoryScreen() {
               ]}>
               {shopUnlocked ? "MAĞAZA" : "MAĞAZA · KİLİTLİ"}
             </Text>
-          </Pressable>
+          </GameButton>
 
-          <Pressable
+          <GameButton
             style={[styles.tab, activeTab === "inventory" && styles.activeTab]}
             onPress={() => setActiveTab("inventory")}>
             <Text
@@ -237,7 +237,7 @@ export default function InventoryScreen() {
               ]}>
               ENVANTERİM · {inventory.length}
             </Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -265,11 +265,11 @@ export default function InventoryScreen() {
               GÜN
             </Text>
           ) : (
-            <Pressable
+            <GameButton
               style={styles.lockedButton}
               onPress={() => router.push("/ludus-buildings")}>
               <Text style={styles.lockedButtonText}>BİNALARA GİT</Text>
-            </Pressable>
+            </GameButton>
           )}
         </View>
       )}
@@ -293,7 +293,6 @@ export default function InventoryScreen() {
           ]}>
           {initialEquipment.map((item) => {
             const noActionPoints = ludus.actionPoints < EQUIPMENT_ACTION_COST;
-
             const noMoney = ludus.denarius < item.price;
 
             return (
@@ -352,7 +351,7 @@ export default function InventoryScreen() {
                 </View>
 
                 <View style={styles.bottomArea}>
-                  <Pressable
+                  <GameButton
                     disabled={noActionPoints || noMoney}
                     style={[
                       styles.buyButton,
@@ -371,7 +370,7 @@ export default function InventoryScreen() {
                           ? "YETERSİZ DENARIUS"
                           : `SATIN AL · ${item.price} D · 1 AP`}
                     </Text>
-                  </Pressable>
+                  </GameButton>
                 </View>
               </View>
             );
@@ -399,11 +398,11 @@ export default function InventoryScreen() {
               </Text>
 
               {shopUnlocked && (
-                <Pressable
+                <GameButton
                   style={styles.emptyButton}
                   onPress={() => setActiveTab("shop")}>
                   <Text style={styles.emptyButtonText}>MAĞAZAYA GİT</Text>
-                </Pressable>
+                </GameButton>
               )}
             </View>
           ) : (
@@ -483,7 +482,7 @@ export default function InventoryScreen() {
                             showsVerticalScrollIndicator
                             contentContainerStyle={styles.gladiatorList}>
                             {playerGladiators.map((gladiator) => (
-                              <Pressable
+                              <GameButton
                                 key={gladiator.id}
                                 style={styles.gladiatorButton}
                                 onPress={() =>
@@ -494,7 +493,7 @@ export default function InventoryScreen() {
                                   numberOfLines={1}>
                                   {gladiator.name}
                                 </Text>
-                              </Pressable>
+                              </GameButton>
                             ))}
                           </ScrollView>
                         ) : (
@@ -507,11 +506,11 @@ export default function InventoryScreen() {
 
                     <View style={styles.bottomArea}>
                       {equippedGladiator && (
-                        <Pressable
+                        <GameButton
                           style={styles.unequipButton}
                           onPress={() => handleUnequip(item.id)}>
                           <Text style={styles.unequipText}>EKİPMANI ÇIKAR</Text>
-                        </Pressable>
+                        </GameButton>
                       )}
                     </View>
                   </View>
@@ -575,7 +574,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

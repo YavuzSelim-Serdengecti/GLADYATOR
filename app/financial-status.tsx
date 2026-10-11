@@ -6,7 +6,6 @@ import {
 import { router } from "expo-router";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import {
   getFinancialStatusLabel,
   MAX_DEBT_DAYS,
@@ -59,11 +59,11 @@ export default function FinancialStatusScreen() {
       <View style={styles.center}>
         <Text style={styles.error}>AKTİF LUDUS BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.menuButton}
           onPress={() => router.replace("/")}>
           <Text style={styles.menuButtonText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -152,9 +152,9 @@ export default function FinancialStatusScreen() {
           </Text>
 
           {!bankruptcyState.bankrupt && (
-            <Pressable style={styles.backButton} onPress={() => router.back()}>
+            <GameButton style={styles.backButton} onPress={() => router.back()}>
               <Text style={styles.backButtonText}>← GERİ</Text>
-            </Pressable>
+            </GameButton>
           )}
         </View>
       </View>
@@ -326,11 +326,11 @@ export default function FinancialStatusScreen() {
               kurarak Roma'da yeniden yükselmeyi deneyebilirsin.
             </Text>
 
-            <Pressable
+            <GameButton
               style={styles.newGameButton}
               onPress={handleBankruptcyExit}>
               <Text style={styles.newGameButtonText}>ANA MENÜYE DÖN</Text>
-            </Pressable>
+            </GameButton>
           </View>
         )}
       </ScrollView>
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

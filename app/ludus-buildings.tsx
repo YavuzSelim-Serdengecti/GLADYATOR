@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { useGameStore } from "../src/store/gameStore";
 
@@ -52,7 +52,6 @@ export default function LudusBuildingsScreen() {
 
     return [...buildings].sort((a, b) => {
       const aUnlocked = ludus.level >= a.requiredLudusLevel;
-
       const bUnlocked = ludus.level >= b.requiredLudusLevel;
 
       if (aUnlocked !== bUnlocked) {
@@ -93,11 +92,11 @@ export default function LudusBuildingsScreen() {
         ]}>
         <Text style={styles.error}>LUDUS BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.menuButton}
           onPress={() => router.replace("/")}>
           <Text style={styles.menuButtonText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -111,6 +110,7 @@ export default function LudusBuildingsScreen() {
   const builders = workers.find((worker) => worker.role === "builder");
   const builderCount = builders?.count ?? 0;
   const builderEfficiency = builders?.efficiency ?? 0;
+
   const builderDailyProgress =
     1 + builderCount * Math.max(0, builderEfficiency) * 0.25;
 
@@ -124,7 +124,6 @@ export default function LudusBuildingsScreen() {
         "YETERSİZ AKSİYON PUANI",
         `Bina inşa etmek için ${BUILDING_ACTION_COST} aksiyon puanı gerekiyor.\n\nKalan aksiyon: ${ludus.actionPoints}/${ludus.maxActionPoints}`,
       );
-
       return;
     }
 
@@ -135,7 +134,6 @@ export default function LudusBuildingsScreen() {
         "İNŞAAT BAŞARISIZ",
         "Ludus seviyen yetmiyor, paran yetersiz veya bu bina zaten yapılmış olabilir.",
       );
-
       return;
     }
 
@@ -158,12 +156,10 @@ export default function LudusBuildingsScreen() {
         "YETERSİZ AKSİYON PUANI",
         `Bina geliştirmek için ${BUILDING_ACTION_COST} aksiyon puanı gerekiyor.\n\nKalan aksiyon: ${ludus.actionPoints}/${ludus.maxActionPoints}`,
       );
-
       return;
     }
 
     const finalCost = upgradeCost * currentLevel;
-
     const success = upgradeLudusBuilding(buildingId);
 
     if (!success) {
@@ -171,7 +167,6 @@ export default function LudusBuildingsScreen() {
         "GELİŞTİRME BAŞARISIZ",
         "Paran yetersiz olabilir veya bina maksimum seviyeye ulaşmış olabilir.",
       );
-
       return;
     }
 
@@ -197,14 +192,12 @@ export default function LudusBuildingsScreen() {
         ]}>
         <View style={styles.identity}>
           <Text style={styles.eyebrow}>LUDUS YÖNETİMİ</Text>
-
           <Text style={styles.title}>BİNALAR</Text>
         </View>
 
         <View style={styles.contextArea}>
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>İNŞA EDİLEN</Text>
-
             <Text style={styles.contextValue}>
               {builtCount}/{buildings.length}
             </Text>
@@ -214,7 +207,6 @@ export default function LudusBuildingsScreen() {
 
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>AÇIK</Text>
-
             <Text style={styles.contextValue}>{availableCount}</Text>
           </View>
 
@@ -222,7 +214,6 @@ export default function LudusBuildingsScreen() {
 
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>İNŞAATÇI</Text>
-
             <Text style={styles.contextValue}>{builderCount}</Text>
           </View>
         </View>
@@ -236,9 +227,9 @@ export default function LudusBuildingsScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← LUDUS</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -251,7 +242,6 @@ export default function LudusBuildingsScreen() {
           },
         ]}>
         <Text style={styles.pageEyebrow}>LUDUS GELİŞİMİ</Text>
-
         <Text style={styles.pageTitle}>BİNALAR VE GELİŞTİRMELER</Text>
       </View>
 
@@ -273,18 +263,14 @@ export default function LudusBuildingsScreen() {
         ]}>
         {sortedBuildings.map((building) => {
           const levelLocked = ludus.level < building.requiredLudusLevel;
-
           const buildMoneyLocked = ludus.denarius < building.buildCost;
 
           const upgradePrice =
             building.upgradeCost * Math.max(1, building.level);
 
           const upgradeMoneyLocked = ludus.denarius < upgradePrice;
-
           const maxLevelReached = building.level >= building.maxLevel;
-
           const noActionPoints = ludus.actionPoints < BUILDING_ACTION_COST;
-
           const underConstruction = building.constructionType !== null;
 
           const estimatedDaysRemaining = underConstruction
@@ -420,7 +406,7 @@ export default function LudusBuildingsScreen() {
                     </Text>
                   </View>
                 ) : !building.isBuilt ? (
-                  <Pressable
+                  <GameButton
                     disabled={buildMoneyLocked || noActionPoints}
                     style={[
                       styles.buildButton,
@@ -446,13 +432,13 @@ export default function LudusBuildingsScreen() {
                           ? "YETERSİZ DENARIUS"
                           : `İNŞA ET · ${building.buildCost} D · 1 AP`}
                     </Text>
-                  </Pressable>
+                  </GameButton>
                 ) : maxLevelReached ? (
                   <View style={styles.maxButton}>
                     <Text style={styles.maxButtonText}>MAKSİMUM SEVİYE</Text>
                   </View>
                 ) : (
-                  <Pressable
+                  <GameButton
                     disabled={upgradeMoneyLocked || noActionPoints}
                     style={[
                       styles.upgradeButton,
@@ -479,7 +465,7 @@ export default function LudusBuildingsScreen() {
                           ? "YETERSİZ DENARIUS"
                           : `LV.${building.level + 1} · ${upgradePrice} D · 1 AP`}
                     </Text>
-                  </Pressable>
+                  </GameButton>
                 )}
               </View>
             </View>
@@ -501,56 +487,27 @@ function Info({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoLabel}>{label}</Text>
-
       <Text style={styles.infoValue}>{value}</Text>
     </View>
   );
 }
 
 function getBuildingCategory(type: string) {
-  if (type === "training_ground") {
-    return "EĞİTİM";
-  }
-
-  if (type === "infirmary") {
-    return "TEDAVİ";
-  }
-
-  if (type === "armory") {
-    return "EKİPMAN";
-  }
-
-  if (type === "barracks") {
-    return "GÜVENLİK";
-  }
-
-  if (type === "slave_quarters") {
-    return "YAŞAM";
-  }
+  if (type === "training_ground") return "EĞİTİM";
+  if (type === "infirmary") return "TEDAVİ";
+  if (type === "armory") return "EKİPMAN";
+  if (type === "barracks") return "GÜVENLİK";
+  if (type === "slave_quarters") return "YAŞAM";
 
   return "LUDUS";
 }
 
 function getBuildingIcon(type: string) {
-  if (type === "training_ground") {
-    return "⚔";
-  }
-
-  if (type === "infirmary") {
-    return "✚";
-  }
-
-  if (type === "armory") {
-    return "◆";
-  }
-
-  if (type === "barracks") {
-    return "◈";
-  }
-
-  if (type === "slave_quarters") {
-    return "⌂";
-  }
+  if (type === "training_ground") return "⚔";
+  if (type === "infirmary") return "✚";
+  if (type === "armory") return "◆";
+  if (type === "barracks") return "◈";
+  if (type === "slave_quarters") return "⌂";
 
   return "◆";
 }
@@ -562,7 +519,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

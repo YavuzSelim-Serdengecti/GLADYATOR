@@ -14,6 +14,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
+
 import {
   getCurrentLevelRequirement,
   getLudusLevelProgress,
@@ -64,11 +66,11 @@ export default function LudusScreen() {
         ]}>
         <Text style={styles.error}>LUDUS BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.errorButton}
           onPress={() => router.replace("/")}>
           <Text style={styles.errorButtonText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -158,7 +160,6 @@ export default function LudusScreen() {
         <View style={styles.contextInfo}>
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>GLADYATÖR</Text>
-
             <Text style={styles.contextValue}>{playerGladiators.length}</Text>
           </View>
 
@@ -166,23 +167,21 @@ export default function LudusScreen() {
 
           <View style={styles.contextItem}>
             <Text style={styles.contextLabel}>HAZIR</Text>
-
             <Text style={styles.contextValue}>{healthyGladiators.length}</Text>
           </View>
         </View>
 
         <View style={styles.resources}>
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
-
           <Text style={styles.resource}>★ {ludus.fame}</Text>
 
           <Text style={styles.resource}>
             ⚡ {ludus.actionPoints}/{ludus.maxActionPoints}
           </Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← HARİTA</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -195,7 +194,6 @@ export default function LudusScreen() {
           },
         ]}>
         <Text style={styles.eyebrow}>SENİN LUDUSUN</Text>
-
         <Text style={styles.pageTitle}>LUDUS YÖNETİMİ</Text>
       </View>
 
@@ -215,9 +213,7 @@ export default function LudusScreen() {
 
             <View style={styles.visualContent}>
               <Text style={styles.visualMark}>◆</Text>
-
               <Text style={styles.visualTitle}>{ludus.name}</Text>
-
               <Text style={styles.visualSubtitle}>HANEDANININ MERKEZİ</Text>
             </View>
           </View>
@@ -225,7 +221,6 @@ export default function LudusScreen() {
           <View style={styles.economyCard}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardEyebrow}>MALİ DURUM</Text>
-
               <Text style={styles.cardTitle}>SON GÜN</Text>
             </View>
 
@@ -284,7 +279,6 @@ export default function LudusScreen() {
 
         <View style={styles.menuArea}>
           <Text style={styles.sectionEyebrow}>YÖNETİM</Text>
-
           <Text style={styles.sectionTitle}>LUDUS İŞLEMLERİ</Text>
 
           <View style={styles.menuGrid}>
@@ -425,7 +419,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 
@@ -639,7 +633,7 @@ const styles = StyleSheet.create({
   },
 
   visualOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(15, 12, 8, 0.35)",
   },
 

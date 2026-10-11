@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { arenas } from "../src/data/arenas";
 import { useGameStore } from "../src/store/gameStore";
@@ -57,11 +57,11 @@ export default function ArenaScreen() {
       <View style={styles.center}>
         <Text style={styles.error}>LUDUS BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.menuButton}
           onPress={() => router.replace("/")}>
           <Text style={styles.menuButtonText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -138,9 +138,9 @@ export default function ArenaScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← HARİTA</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -296,7 +296,7 @@ export default function ArenaScreen() {
                   </View>
                 </View>
               ) : (
-                <Pressable
+                <GameButton
                   style={[
                     styles.enterButton,
                     insufficientActionPoints && styles.insufficientButton,
@@ -311,7 +311,7 @@ export default function ArenaScreen() {
                       ? "YETERSİZ AP"
                       : `ARENAYA GİR · ${ARENA_ACTION_COST} AP`}
                   </Text>
-                </Pressable>
+                </GameButton>
               )}
             </View>
           );
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

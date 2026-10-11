@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -17,6 +16,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { useGameStore } from "../src/store/gameStore";
 
@@ -79,7 +79,7 @@ export default function NewGameScreen() {
 
       <View style={styles.overlay} />
 
-      <Pressable
+      <GameButton
         style={[
           styles.backButton,
           {
@@ -89,7 +89,7 @@ export default function NewGameScreen() {
         ]}
         onPress={() => router.back()}>
         <Text style={styles.backButtonText}>← GERİ</Text>
-      </Pressable>
+      </GameButton>
 
       <View
         style={[
@@ -138,9 +138,9 @@ export default function NewGameScreen() {
             />
           </View>
 
-          <Pressable style={styles.continueButton} onPress={handleContinue}>
+          <GameButton style={styles.continueButton} onPress={handleContinue}>
             <Text style={styles.continueButtonText}>DEVAM ET</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -169,12 +169,12 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#17120B",
   },
 
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0, 0, 0, 0.30)",
   },
 

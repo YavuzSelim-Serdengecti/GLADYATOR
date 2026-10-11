@@ -1,21 +1,17 @@
 import {
-    Cinzel_600SemiBold,
-    Cinzel_700Bold,
-    useFonts,
+  Cinzel_600SemiBold,
+  Cinzel_700Bold,
+  useFonts,
 } from "@expo-google-fonts/cinzel";
 import { router } from "expo-router";
-import {
-    ActivityIndicator,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
+
 import {
-    getRewardedAdRemainingCount,
-    REWARDED_AD_REWARDS,
+  getRewardedAdRemainingCount,
+  REWARDED_AD_REWARDS,
 } from "../src/features/ads/rewardedAds";
 
 import { useGameStore } from "../src/store/gameStore";
@@ -50,11 +46,11 @@ export default function RewardedAdsScreen() {
       <View style={styles.center}>
         <Text style={styles.error}>AKTİF LUDUS BULUNAMADI</Text>
 
-        <Pressable
+        <GameButton
           style={styles.menuButton}
           onPress={() => router.replace("/")}>
           <Text style={styles.menuButtonText}>ANA MENÜ</Text>
-        </Pressable>
+        </GameButton>
       </View>
     );
   }
@@ -101,9 +97,9 @@ export default function RewardedAdsScreen() {
         </View>
 
         <View style={styles.topRight}>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← GERİ</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -203,7 +199,7 @@ export default function RewardedAdsScreen() {
                 </Text>
               </View>
 
-              <Pressable
+              <GameButton
                 disabled={disabled}
                 style={[styles.watchButton, disabled && styles.disabledButton]}
                 onPress={() => handleWatchAd(reward.type)}>
@@ -214,7 +210,7 @@ export default function RewardedAdsScreen() {
                   ]}>
                   {disabled ? "GÜNLÜK LİMİT DOLDU" : "REKLAMI İZLE"}
                 </Text>
-              </Pressable>
+              </GameButton>
             </View>
           );
         })}
@@ -253,7 +249,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 

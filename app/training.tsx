@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import GameButton from "../src/components/GameButton";
 import GameModal from "../src/components/GameModal";
 import { useGameStore } from "../src/store/gameStore";
 
@@ -100,11 +100,11 @@ export default function TrainingScreen() {
             etmelisin.
           </Text>
 
-          <Pressable
+          <GameButton
             style={styles.lockedBackButton}
             onPress={() => router.back()}>
             <Text style={styles.lockedBackText}>← LUDUSA DÖN</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
     );
@@ -168,9 +168,9 @@ export default function TrainingScreen() {
 
           <Text style={styles.resource}>🪙 {ludus.denarius}</Text>
 
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <GameButton style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>← LUDUS</Text>
-          </Pressable>
+          </GameButton>
         </View>
       </View>
 
@@ -326,14 +326,14 @@ function TrainingButton({
   onPress: () => void;
 }) {
   return (
-    <Pressable style={styles.trainingButton} onPress={onPress}>
+    <GameButton style={styles.trainingButton} onPress={onPress}>
       <Text
         style={styles.trainingButtonText}
         numberOfLines={1}
         adjustsFontSizeToFit>
         {label}
       </Text>
-    </Pressable>
+    </GameButton>
   );
 }
 
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
 
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#15110C",
   },
 
