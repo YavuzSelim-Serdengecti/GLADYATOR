@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Animated,
   ImageBackground,
-  Modal,
   StyleSheet,
   Text,
   View,
@@ -409,11 +408,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <Modal
-        visible={settingsVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSettingsVisible(false)}>
+      {settingsVisible && (
         <View style={styles.modalOverlay}>
           <View style={styles.settingsPanel}>
             <Text style={styles.settingsTitle}>AYARLAR</Text>
@@ -448,7 +443,7 @@ export default function HomeScreen() {
             </GameButton>
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 }
@@ -589,7 +584,8 @@ const styles = StyleSheet.create({
   },
 
   modalOverlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFill,
+    zIndex: 20,
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     alignItems: "center",
     justifyContent: "center",
