@@ -3,12 +3,13 @@ import {
   Cinzel_700Bold,
   useFonts,
 } from "@expo-google-fonts/cinzel";
-import { router } from "expo-router";
-import { useEffect, useRef } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   ImageBackground,
+  Modal,
   StyleSheet,
   Text,
   View,
@@ -16,6 +17,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import GameButton from "../src/components/GameButton";
+import {
+  playMusic,
+  setEffectsEnabled,
+  setMusicEnabled,
+  stopMusic,
+} from "../src/services/audioManager";
 import { useGameStore } from "../src/store/gameStore";
 
 const AnimatedImageBackground =
@@ -53,27 +60,23 @@ function DustParticle({
     const animation = Animated.loop(
       Animated.sequence([
         Animated.delay(delay),
-
         Animated.parallel([
           Animated.timing(move, {
             toValue: 1,
             duration,
             useNativeDriver: true,
           }),
-
           Animated.sequence([
             Animated.timing(opacity, {
               toValue: 0.8,
               duration: duration * 0.25,
               useNativeDriver: true,
             }),
-
             Animated.timing(opacity, {
               toValue: 0.15,
               duration: duration * 0.5,
               useNativeDriver: true,
             }),
-
             Animated.timing(opacity, {
               toValue: 0,
               duration: duration * 0.25,
@@ -81,7 +84,6 @@ function DustParticle({
             }),
           ]),
         ]),
-
         Animated.timing(move, {
           toValue: 0,
           duration: 0,
@@ -91,7 +93,6 @@ function DustParticle({
     );
 
     animation.start();
-
     return () => animation.stop();
   }, [delay, duration, move, opacity]);
 
@@ -142,23 +143,19 @@ function Bird({
     const animation = Animated.loop(
       Animated.sequence([
         Animated.delay(delay),
-
         Animated.parallel([
           Animated.timing(position, {
             toValue: 1,
             duration,
             useNativeDriver: true,
           }),
-
           Animated.sequence([
             Animated.timing(opacity, {
               toValue: 0.85,
               duration: 1000,
               useNativeDriver: true,
             }),
-
             Animated.delay(Math.max(duration - 2000, 0)),
-
             Animated.timing(opacity, {
               toValue: 0,
               duration: 1000,
@@ -166,19 +163,16 @@ function Bird({
             }),
           ]),
         ]),
-
         Animated.timing(position, {
           toValue: 0,
           duration: 0,
           useNativeDriver: true,
         }),
-
         Animated.delay(9000),
       ]),
     );
 
     animation.start();
-
     return () => animation.stop();
   }, [delay, duration, opacity, position]);
 
@@ -217,6 +211,10 @@ export default function HomeScreen() {
   const checkSavedGame = useGameStore((state) => state.checkSavedGame);
   const loadGame = useGameStore((state) => state.loadGame);
 
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [musicOn, setMusicOn] = useState(true);
+  const [effectsOn, setEffectsOn] = useState(true);
+
   const [fontsLoaded] = useFonts({
     Cinzel_600SemiBold,
     Cinzel_700Bold,
@@ -225,9 +223,18 @@ export default function HomeScreen() {
   const safeLeft = Math.max(70, insets.left + 24);
 
   const backgroundScale = useRef(new Animated.Value(1)).current;
-
   const lineOpacity = useRef(new Animated.Value(0.45)).current;
   const lineScale = useRef(new Animated.Value(0.9)).current;
+
+  useFocusEffect(
+    useCallback(() => {
+      playMusic("menu");
+
+      return () => {
+        stopMusic();
+      };
+    }, []),
+  );
 
   useEffect(() => {
     checkSavedGame();
@@ -241,7 +248,6 @@ export default function HomeScreen() {
           duration: 8000,
           useNativeDriver: true,
         }),
-
         Animated.timing(backgroundScale, {
           toValue: 1,
           duration: 8000,
@@ -258,21 +264,18 @@ export default function HomeScreen() {
             duration: 1400,
             useNativeDriver: true,
           }),
-
           Animated.timing(lineOpacity, {
             toValue: 0.45,
             duration: 1400,
             useNativeDriver: true,
           }),
         ]),
-
         Animated.sequence([
           Animated.timing(lineScale, {
             toValue: 1.12,
             duration: 1400,
             useNativeDriver: true,
           }),
-
           Animated.timing(lineScale, {
             toValue: 0.9,
             duration: 1400,
@@ -301,6 +304,18 @@ export default function HomeScreen() {
     if (loaded) {
       router.replace("/map");
     }
+  };
+
+  const toggleMusic = () => {
+    const next = !musicOn;
+    setMusicOn(next);
+    setMusicEnabled(next);
+  };
+
+  const toggleEffects = () => {
+    const next = !effectsOn;
+    setEffectsOn(next);
+    setEffectsEnabled(next);
   };
 
   if (!fontsLoaded) {
@@ -386,11 +401,54 @@ export default function HomeScreen() {
             <Text style={styles.menuText}>HESAP</Text>
           </GameButton>
 
-          <GameButton style={styles.menuItem}>
+          <GameButton
+            style={styles.menuItem}
+            onPress={() => setSettingsVisible(true)}>
             <Text style={styles.menuText}>AYARLAR</Text>
           </GameButton>
         </View>
       </View>
+
+      <Modal
+        visible={settingsVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSettingsVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.settingsPanel}>
+            <Text style={styles.settingsTitle}>AYARLAR</Text>
+            <Text style={styles.settingsSubtitle}>SES SEÇENEKLERİ</Text>
+
+            <GameButton style={styles.settingRow} onPress={toggleMusic}>
+              <Text style={styles.settingLabel}>MÜZİK</Text>
+              <Text
+                style={[
+                  styles.settingValue,
+                  !musicOn && styles.settingValueOff,
+                ]}>
+                {musicOn ? "AÇIK" : "KAPALI"}
+              </Text>
+            </GameButton>
+
+            <GameButton style={styles.settingRow} onPress={toggleEffects}>
+              <Text style={styles.settingLabel}>SES EFEKTLERİ</Text>
+              <Text
+                style={[
+                  styles.settingValue,
+                  !effectsOn && styles.settingValueOff,
+                ]}>
+                {effectsOn ? "AÇIK" : "KAPALI"}
+              </Text>
+            </GameButton>
+
+            <GameButton
+              style={styles.closeButton}
+              onPress={() => setSettingsVisible(false)}>
+              <Text style={styles.closeButtonText}>KAPAT</Text>
+            </GameButton>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -477,7 +535,6 @@ const styles = StyleSheet.create({
     fontSize: 38,
     letterSpacing: 4,
     marginBottom: 32,
-
     textShadowColor: "rgba(0, 0, 0, 0.9)",
     textShadowOffset: {
       width: 1,
@@ -501,7 +558,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cinzel_600SemiBold",
     fontSize: 16,
     letterSpacing: 1.6,
-
     textShadowColor: "rgba(0, 0, 0, 0.9)",
     textShadowOffset: {
       width: 1,
@@ -523,7 +579,6 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: "#DDB936",
     marginTop: 4,
-
     shadowColor: "#DDB936",
     shadowOpacity: 0.8,
     shadowRadius: 5,
@@ -531,5 +586,79 @@ const styles = StyleSheet.create({
       width: 0,
       height: 0,
     },
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  settingsPanel: {
+    width: 350,
+    maxWidth: "90%",
+    padding: 25,
+    backgroundColor: "#17120C",
+    borderWidth: 1,
+    borderColor: "#7B6230",
+    borderRadius: 5,
+  },
+
+  settingsTitle: {
+    color: "#DDB936",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 23,
+    textAlign: "center",
+    letterSpacing: 2,
+  },
+
+  settingsSubtitle: {
+    color: "#8F805F",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 10,
+    textAlign: "center",
+    marginTop: 8,
+    marginBottom: 22,
+  },
+
+  settingRow: {
+    minHeight: 48,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#382E1D",
+  },
+
+  settingLabel: {
+    color: "#E2D6B8",
+    fontFamily: "Cinzel_600SemiBold",
+    fontSize: 12,
+  },
+
+  settingValue: {
+    color: "#8FAF72",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 11,
+  },
+
+  settingValueOff: {
+    color: "#B56D5C",
+  },
+
+  closeButton: {
+    height: 42,
+    backgroundColor: "#DDB936",
+    borderRadius: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 26,
+  },
+
+  closeButtonText: {
+    color: "#11100D",
+    fontFamily: "Cinzel_700Bold",
+    fontSize: 12,
   },
 });

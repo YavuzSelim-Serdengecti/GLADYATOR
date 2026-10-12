@@ -4,7 +4,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/cinzel";
 import { router, useLocalSearchParams } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -34,6 +34,7 @@ import {
 
 import { applyEquipmentBonuses } from "../src/features/equipment/getEquipmentBonuses";
 
+import { playEffect, playMusic, stopMusic } from "../src/services/audioManager";
 import { useGameStore } from "../src/store/gameStore";
 import { randomInt } from "../src/utils/random";
 
@@ -104,6 +105,13 @@ export default function ArenaBattleScreen() {
   });
 
   const resultApplied = useRef(false);
+
+  useEffect(() => {
+    playMusic("battle");
+    return () => {
+      stopMusic();
+    };
+  }, []);
 
   const playerMoveX = useRef(new Animated.Value(0)).current;
   const enemyMoveX = useRef(new Animated.Value(0)).current;
@@ -243,6 +251,8 @@ export default function ArenaBattleScreen() {
     }
 
     resultApplied.current = true;
+    stopMusic();
+    playEffect(won ? "victory" : "defeat");
 
     const baseDenariusReward = won
       ? randomInt(arena.rewardMin, arena.rewardMax)
@@ -332,6 +342,7 @@ export default function ArenaBattleScreen() {
       if (action === "attack") {
         animateEnemyAttack(() => {
           const result = performAttack(updatedEnemy, updatedPlayer);
+          playEffect("sword");
 
           animatePlayerHit();
 
@@ -391,6 +402,7 @@ export default function ArenaBattleScreen() {
 
     animatePlayerAttack(() => {
       const result = performAttack(updatedPlayer, updatedEnemy);
+      playEffect("sword");
 
       animateEnemyHit();
 

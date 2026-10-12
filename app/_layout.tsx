@@ -4,8 +4,9 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { initializeAudio } from "../src/services/audioManager";
+
 const APP_IMAGES = [
-  // Gladyatör portreleri
   require("../assets/images/faces/face_01.png"),
   require("../assets/images/faces/face_02.png"),
   require("../assets/images/faces/face_03.png"),
@@ -23,7 +24,6 @@ const APP_IMAGES = [
   require("../assets/images/faces/face_15.png"),
   require("../assets/images/faces/face_16.png"),
 
-  // Diğer oyun görselleri
   require("../assets/images/menu/main-menu-bg.jpg"),
   require("../assets/images/map/rome-map.jpeg"),
 ];
@@ -32,6 +32,10 @@ export default function RootLayout() {
   useEffect(() => {
     Asset.loadAsync(APP_IMAGES).catch((error) => {
       console.log("Görseller preload edilemedi:", error);
+    });
+
+    initializeAudio().catch((error) => {
+      console.log("Ses sistemi başlatılamadı:", error);
     });
   }, []);
 
